@@ -1,14 +1,7 @@
-from flask import Flask, request
+from flask import request
 from colorama import Fore, Style
 from datetime import datetime
-import logging
 
-app = Flask(__name__)
-
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
-@app.route('/webhook', methods=['POST'])
 def listen_messages():
     data = request.json
 
@@ -16,7 +9,6 @@ def listen_messages():
         entry = data['entry'][0]
         change = entry['changes'][0]['value']
 
-        # Solo procesar si hay mensajes
         if 'messages' not in change:
             return "EVENT_RECEIVED", 200
 
@@ -30,9 +22,7 @@ def listen_messages():
         timestamp = int(mensaje['timestamp'])
         fecha_hora = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
-        # Colores más llamativos para valores
         print(
-            "📩 "
             f"{Fore.RED}name: {Fore.LIGHTYELLOW_EX}{nombre} {Style.RESET_ALL}| "
             f"{Fore.BLUE}number: {Fore.LIGHTYELLOW_EX}{numero} {Style.RESET_ALL}| "
             f"{Fore.GREEN}type: {Fore.LIGHTYELLOW_EX}{tipo} {Style.RESET_ALL}| "
@@ -44,6 +34,3 @@ def listen_messages():
         print(Fore.RED + "Error processing message:" + Style.RESET_ALL, e)
 
     return "EVENT_RECEIVED", 200
-
-if __name__ == '__main__':
-    app.run(port=5000)
