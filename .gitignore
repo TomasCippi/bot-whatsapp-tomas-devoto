@@ -1,0 +1,5 @@
+.env
+/venv
+/assets
+/.git
+/functions/__pycache__.env

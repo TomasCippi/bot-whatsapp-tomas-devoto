@@ -1,49 +1,202 @@
-from flask import Flask, request
+import os
+import requests
+from dotenv import load_dotenv
 from colorama import Fore, Style
-from datetime import datetime
-import logging
 
-app = Flask(__name__)
+load_dotenv()
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+def send_menu_buttons(to_number: str, text: str = "Elige una opción:"):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {"text": text},
+            "action": {
+                "buttons": [
+                    {"type": "reply", "reply": {"id": "opt1", "title": "Opción 1"}},
+                    {"type": "reply", "reply": {"id": "opt2", "title": "Opción 2"}}
+                ]
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
 
-@app.route('/webhook', methods=['POST'])
-def listen_messages():
-    data = request.json
+def send_text_message(to_number: str, message: str):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "text",
+        "text": {"body": message}
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Mensaje enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar mensaje ({response.status_code}): {response.text}" + Style.RESET_ALL)
 
-    try:
-        entry = data['entry'][0]
-        change = entry['changes'][0]['value']
+def send_img_message(to_number: str, media_id: str, caption: str = ""):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "image",
+        "image": {
+            "id": media_id,
+            "caption": caption
+        }
+    }
 
-        # Solo procesar si hay mensajes
-        if 'messages' not in change:
-            return "EVENT_RECEIVED", 200
+    response = requests.post(url, headers=headers, json=payload)
 
-        nombre = change['contacts'][0]['profile']['name']
-        numero = change['contacts'][0]['wa_id']
-        mensaje = change['messages'][0]
-        tipo = mensaje['type']
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Imagen enviada a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar imagen ({response.status_code}): {response.text}" + Style.RESET_ALL)
 
-        texto = mensaje['text']['body'] if tipo == 'text' else '<no-text>'
+def send_sticker_message(to_number: str, media_id: str):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": to_number,
+        "type": "sticker",
+        "sticker": {
+            "id": media_id
+        }
+    }
 
-        timestamp = int(mensaje['timestamp'])
-        fecha_hora = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Sticker enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar sticker ({response.status_code}): {response.text}" + Style.RESET_ALL)
 
-        # Colores más llamativos para valores
-        print(
-            "📩 "
-            f"{Fore.RED}name: {Fore.LIGHTYELLOW_EX}{nombre} {Style.RESET_ALL}| "
-            f"{Fore.BLUE}number: {Fore.LIGHTYELLOW_EX}{numero} {Style.RESET_ALL}| "
-            f"{Fore.GREEN}type: {Fore.LIGHTYELLOW_EX}{tipo} {Style.RESET_ALL}| "
-            f"{Fore.MAGENTA}message: {Fore.LIGHTYELLOW_EX}{texto} "
-            f"{Fore.CYAN}[{fecha_hora}]{Style.RESET_ALL}"
-        )
+def send_pdf_message(to_number: str, media_id: str, filename: str):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "document",
+        "document": {
+            "id": media_id,
+            "filename": filename
+        }
+    }
 
-    except Exception as e:
-        print(Fore.RED + "Error processing message:" + Style.RESET_ALL, e)
+    response = requests.post(url, headers=headers, json=payload)
 
-    return "EVENT_RECEIVED", 200
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Documento enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar documento ({response.status_code}): {response.text}" + Style.RESET_ALL)
 
-if __name__ == '__main__':
-    app.run(port=5000)
+def send_link_message(to_number: str, link_url: str, link_title: str):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+
+    # Texto con solo título y link en el cuerpo
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "text",
+        "text": {
+            "body": f"{link_title}\n{link_url}"
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Link enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar link ({response.status_code}): {response.text}" + Style.RESET_ALL)
+
+def send_contact_message(to_number: str, contact_name: str, contact_phone: str):
+    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+        "Content-Type": "application/json"
+    }
+    vcard = (
+        f"BEGIN:VCARD\n"
+        f"VERSION:3.0\n"
+        f"N:{contact_name};;;;\n"
+        f"FN:{contact_name}\n"
+        f"TEL;TYPE=CELL:{contact_phone}\n"
+        f"END:VCARD"
+    )
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "contacts",
+        "contacts": [
+            {
+                "addresses": [],
+                "birthday": None,
+                "emails": [],
+                "name": {
+                    "formatted_name": contact_name,
+                    "first_name": contact_name,
+                    "last_name": ""
+                },
+                "org": None,
+                "phones": [
+                    {
+                        "phone": contact_phone,
+                        "type": "CELL"
+                    }
+                ],
+                "urls": []
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(Fore.GREEN + f"✓ Contacto enviado a {to_number}" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + f"❌ Error al enviar contacto ({response.status_code}): {response.text}" + Style.RESET_ALL)
+
+
+if __name__ == "__main__":
+    test_number = "541158633864"  # Cambiá por tu número con código de país sin +
+
+    print("Probando envíos a", test_number)
+
+    send_text_message(test_number, "Mensaje de prueba texto")
+    send_menu_buttons(test_number, "Seleccioná una opción")
+    send_img_message(test_number, 4022766811309944, "Imagen de prueba")
+    send_sticker_message(test_number, 1427225991900157)
+    send_pdf_message(test_number, 1920025175507231, "documento_de_prueba.pdf")
+    send_link_message(test_number, "https://www.ejemplo.com", "Título del enlace")
+    send_contact_message(test_number, "Juan Pérez", "+5491158633864")
