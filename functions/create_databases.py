@@ -13,11 +13,12 @@ def create_tables():
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
-        numero TEXT NOT NULL,
+        numero TEXT NOT NULL UNIQUE,
         fecha_primera_vez TEXT NOT NULL,
         conversacion_iniciada INTEGER DEFAULT 0,
         estado BOOLEAN DEFAULT 0,
-        ultimo_mensaje TEXT
+        ultimo_mensaje TEXT,
+        ultimo_mensaje_enviado TEXT
     )
     """)
 

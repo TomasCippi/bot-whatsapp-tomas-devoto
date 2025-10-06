@@ -12,15 +12,17 @@ from functions.templates_messages import *
 
 # ------------------- Limpiar tabla users para pruebas -------------------
 DB_PATH = "database.db"
-""" conn = sqlite3.connect(DB_PATH)
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 cursor.execute("DELETE FROM users")
 conn.commit()
 conn.close()
-print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL) """
+print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL) 
 
 load_dotenv()
 app = Flask(__name__)
+
+TIEMPO_ESPERA = {"hours": 0, "minutes": 1, "seconds": 0}
 
 def update_conversation(numero_real):
     """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
@@ -42,16 +44,60 @@ def update_conversation(numero_real):
                 WHERE numero = ?
             """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
             conn.commit()
-            print(f"{Fore.YELLOW}Usuario ya registrado, conversación actualizada{Style.RESET_ALL}")
-            return True  # Puede responder
+            conn.close()
+            return True
         else:
-            print(f"{Fore.MAGENTA}Pasaron más de 24h desde el último mensaje. No se responde.{Style.RESET_ALL}")
             cursor.execute("UPDATE users SET ultimo_mensaje = ? WHERE numero = ?",
                         (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
             conn.commit()
+            conn.close()
             return False
     conn.close()
     return True
+
+def verificar_bienvenida_devuelta(numero_real, nombre):
+    """
+    Verifica si han pasado TIEMPO_ESPERA desde el último mensaje enviado al usuario.
+    Si sí, envía la bienvenida de regreso y el menú principal.
+    Retorna True si se envió la bienvenida (ignorar el mensaje actual).
+    """
+    numero_hash = get_identifier_hash(numero_real)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT ultimo_mensaje_enviado FROM users WHERE numero = ?", (numero_hash,))
+    row = cursor.fetchone()
+    fecha_actual = datetime.now()
+
+    if not row or not row[0]:
+        # Usuario nuevo o sin valor → enviar bienvenida devuelta
+        bienvenida_devuelta_mensaje(numero_real, nombre)
+        send_menu_list(numero_real, "¿En qué podemos ayudarte hoy?", opciones_menu_principal)
+        cursor.execute("""
+            UPDATE users
+            SET ultimo_mensaje_enviado = ?
+            WHERE numero = ?
+        """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+        conn.commit()
+        conn.close()
+        return True
+
+    ultimo_enviado = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
+    diferencia = fecha_actual - ultimo_enviado
+
+    if diferencia >= timedelta(**TIEMPO_ESPERA):
+        bienvenida_devuelta_mensaje(numero_real, nombre)
+        cursor.execute("""
+            UPDATE users
+            SET ultimo_mensaje_enviado = ?
+            WHERE numero = ?
+        """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+        conn.commit()
+        conn.close()
+        return True
+
+    conn.close()
+    return False
 
 @app.route("/webhook", methods=["GET"])
 def webhook_verify():
@@ -65,9 +111,8 @@ def webhook_receive():
         change = entry['changes'][0]['value']
 
         if 'messages' not in change or not change['messages']:
-            return "EVENT_RECEIVED", 200  # ignorar mensajes vacíos
+            return "EVENT_RECEIVED", 200
 
-        # Extraer datos
         nombre = change['contacts'][0]['profile']['name']
         numero_real = normalizar_numero(change['contacts'][0]['wa_id'])
         mensaje = change['messages'][0]
@@ -78,21 +123,24 @@ def webhook_receive():
         elif 'interactive' in mensaje and mensaje['interactive']['type'] == 'list_reply':
             texto_usuario = mensaje['interactive']['list_reply']['id']
         else:
-            return "EVENT_RECEIVED", 200  # mensaje que no entendemos
+            return "EVENT_RECEIVED", 200
 
         print(f"{Fore.CYAN}📩 Mensaje recibido de {nombre} ({numero_real}): '{texto_usuario}'{Style.RESET_ALL}")
 
-        # Verificar existencia de usuario
         if user_exists(numero_real):
             puede_responder = update_conversation(numero_real)
             if not puede_responder:
+                return "EVENT_RECEIVED", 200
+
+            if verificar_bienvenida_devuelta(numero_real, nombre):
+                # Bienvenida devuelta enviada → ignorar mensaje actual
                 return "EVENT_RECEIVED", 200
 
             # ---------------------- Respuestas de menú ----------------------
             if texto_usuario == "main_menu_opt1":
                 sobre_nosotros_mensaje(numero_real)
             elif texto_usuario == "main_menu_opt2":
-                pass  # Nivel inicial, aún sin plantilla
+                pass  # Nivel inicial
             elif texto_usuario == "main_menu_opt3":
                 pass  # Nivel primario
             elif texto_usuario == "main_menu_opt4":
@@ -101,10 +149,8 @@ def webhook_receive():
                 contacto_mensaje(numero_real)
             elif texto_usuario == "main_menu_opt6":
                 pass  # Inscripciones
-            # Mensajes de prueba o comandos especiales
             elif texto_usuario == "..":
                 mensaje_prueba(numero_real, nombre)
-            # Mensajes no reconocidos
             else:
                 send_text_message(numero_real, "No entendí el comando.")
         else:

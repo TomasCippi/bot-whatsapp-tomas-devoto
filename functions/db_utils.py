@@ -13,17 +13,16 @@ def normalizar_numero(numero: str) -> str:
 
 def add_user(nombre, numero_real):
     numero_hash = get_identifier_hash(numero_real)
+    fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute("""
-        INSERT INTO users (nombre, numero, fecha_primera_vez, conversacion_iniciada, estado, ultimo_mensaje)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (nombre, numero_hash, fecha_actual, 1, 1, fecha_actual))
+        INSERT INTO users (nombre, numero, fecha_primera_vez, conversacion_iniciada, estado, ultimo_mensaje, ultimo_mensaje_enviado)
+        VALUES (?, ?, ?, 0, 0, ?, ?)
+    """, (nombre, numero_hash, fecha_actual, fecha_actual, fecha_actual))
     conn.commit()
     conn.close()
     print(f"{Fore.GREEN}Nuevo usuario agregado: {nombre} | hash: {numero_hash[:12]}... | fecha: {fecha_actual}{Style.RESET_ALL}")
-    send_text_message(numero_real, f"¡Hola {nombre}! Bienvenido/a al Tomás Devoto 😄")
 
 def user_exists(numero_real):
     numero_hash = get_identifier_hash(numero_real)
