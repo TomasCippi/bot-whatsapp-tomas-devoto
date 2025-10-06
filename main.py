@@ -22,8 +22,6 @@ print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL)
 load_dotenv()
 app = Flask(__name__)
 
-TIEMPO_ESPERA = {"hours": 0, "minutes": 1, "seconds": 0}
-
 def update_conversation(numero_real):
     """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
     numero_hash = get_identifier_hash(numero_real)
@@ -61,6 +59,9 @@ def verificar_bienvenida_devuelta(numero_real, nombre):
     Si sí, envía la bienvenida de regreso y el menú principal.
     Retorna True si se envió la bienvenida (ignorar el mensaje actual).
     """
+
+    TIEMPO_ESPERA = {"hours": 24, "minutes": 0, "seconds": 0}
+
     numero_hash = get_identifier_hash(numero_real)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -110,6 +111,7 @@ def webhook_receive():
         entry = data['entry'][0]
         change = entry['changes'][0]['value']
 
+        # Verificar si hay mensajes
         if 'messages' not in change or not change['messages']:
             return "EVENT_RECEIVED", 200
 
@@ -117,13 +119,17 @@ def webhook_receive():
         numero_real = normalizar_numero(change['contacts'][0]['wa_id'])
         mensaje = change['messages'][0]
 
-        # Determinar tipo de mensaje
+        texto_usuario = None
+
         if 'text' in mensaje and 'body' in mensaje['text'] and mensaje['text']['body'].strip():
             texto_usuario = mensaje['text']['body'].strip().lower()
-        elif 'interactive' in mensaje and mensaje['interactive']['type'] == 'list_reply':
+        elif 'interactive' in mensaje and mensaje['interactive']['type'] == 'list_reply' and 'id' in mensaje['interactive']['list_reply']:
             texto_usuario = mensaje['interactive']['list_reply']['id']
-        else:
+
+        # Si no hay texto o id, ignorar el mensaje completamente
+        if not texto_usuario:
             return "EVENT_RECEIVED", 200
+
 
         print(f"{Fore.CYAN}📩 Mensaje recibido de {nombre} ({numero_real}): '{texto_usuario}'{Style.RESET_ALL}")
 
@@ -133,7 +139,6 @@ def webhook_receive():
                 return "EVENT_RECEIVED", 200
 
             if verificar_bienvenida_devuelta(numero_real, nombre):
-                # Bienvenida devuelta enviada → ignorar mensaje actual
                 return "EVENT_RECEIVED", 200
 
             # ---------------------- Respuestas de menú ----------------------
@@ -161,6 +166,7 @@ def webhook_receive():
         print(Fore.RED + "Error procesando mensaje en main:" + Style.RESET_ALL, e)
 
     return "EVENT_RECEIVED", 200
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
