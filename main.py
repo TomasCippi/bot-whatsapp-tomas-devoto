@@ -1,202 +1,122 @@
+import sqlite3
 import os
-import requests
-from dotenv import load_dotenv
+from flask import Flask, request
 from colorama import Fore, Style
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from functions.verify_webhook import verify_webhook
+from functions.db_utils import normalizar_numero, user_exists, add_user
+from functions.hash_utils import get_identifier_hash
+from functions.send_messages import send_text_message
+from functions.templates_messages import *
+
+# ------------------- Limpiar tabla users para pruebas -------------------
+DB_PATH = "database.db"
+""" conn = sqlite3.connect(DB_PATH)
+cursor = conn.cursor()
+cursor.execute("DELETE FROM users")
+conn.commit()
+conn.close()
+print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL) """
 
 load_dotenv()
+app = Flask(__name__)
 
-def send_menu_buttons(to_number: str, text: str = "Elige una opción:"):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "interactive",
-        "interactive": {
-            "type": "button",
-            "body": {"text": text},
-            "action": {
-                "buttons": [
-                    {"type": "reply", "reply": {"id": "opt1", "title": "Opción 1"}},
-                    {"type": "reply", "reply": {"id": "opt2", "title": "Opción 2"}}
-                ]
-            }
-        }
-    }
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+def update_conversation(numero_real):
+    """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
+    numero_hash = get_identifier_hash(numero_real)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT ultimo_mensaje FROM users WHERE numero = ?", (numero_hash,))
+    row = cursor.fetchone()
+    fecha_actual = datetime.now()
 
-def send_text_message(to_number: str, message: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "text",
-        "text": {"body": message}
-    }
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Mensaje enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar mensaje ({response.status_code}): {response.text}" + Style.RESET_ALL)
+    if row and row[0]:
+        ultimo_msg = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
+        diferencia = fecha_actual - ultimo_msg
+        if diferencia < timedelta(hours=24):
+            cursor.execute("""
+                UPDATE users 
+                SET conversacion_iniciada = conversacion_iniciada + 1,
+                    ultimo_mensaje = ?
+                WHERE numero = ?
+            """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+            conn.commit()
+            print(f"{Fore.YELLOW}Usuario ya registrado, conversación actualizada{Style.RESET_ALL}")
+            return True  # Puede responder
+        else:
+            print(f"{Fore.MAGENTA}Pasaron más de 24h desde el último mensaje. No se responde.{Style.RESET_ALL}")
+            cursor.execute("UPDATE users SET ultimo_mensaje = ? WHERE numero = ?",
+                        (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+            conn.commit()
+            return False
+    conn.close()
+    return True
 
-def send_img_message(to_number: str, media_id: str, caption: str = ""):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "image",
-        "image": {
-            "id": media_id,
-            "caption": caption
-        }
-    }
+@app.route("/webhook", methods=["GET"])
+def webhook_verify():
+    return verify_webhook()
 
-    response = requests.post(url, headers=headers, json=payload)
+@app.route("/webhook", methods=["POST"])
+def webhook_receive():
+    data = request.json
+    try:
+        entry = data['entry'][0]
+        change = entry['changes'][0]['value']
 
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Imagen enviada a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar imagen ({response.status_code}): {response.text}" + Style.RESET_ALL)
+        if 'messages' not in change or not change['messages']:
+            return "EVENT_RECEIVED", 200  # ignorar mensajes vacíos
 
-def send_sticker_message(to_number: str, media_id: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to_number,
-        "type": "sticker",
-        "sticker": {
-            "id": media_id
-        }
-    }
+        # Extraer datos
+        nombre = change['contacts'][0]['profile']['name']
+        numero_real = normalizar_numero(change['contacts'][0]['wa_id'])
+        mensaje = change['messages'][0]
 
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Sticker enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar sticker ({response.status_code}): {response.text}" + Style.RESET_ALL)
+        # Determinar tipo de mensaje
+        if 'text' in mensaje and 'body' in mensaje['text'] and mensaje['text']['body'].strip():
+            texto_usuario = mensaje['text']['body'].strip().lower()
+        elif 'interactive' in mensaje and mensaje['interactive']['type'] == 'list_reply':
+            texto_usuario = mensaje['interactive']['list_reply']['id']
+        else:
+            return "EVENT_RECEIVED", 200  # mensaje que no entendemos
 
-def send_pdf_message(to_number: str, media_id: str, filename: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "document",
-        "document": {
-            "id": media_id,
-            "filename": filename
-        }
-    }
+        print(f"{Fore.CYAN}📩 Mensaje recibido de {nombre} ({numero_real}): '{texto_usuario}'{Style.RESET_ALL}")
 
-    response = requests.post(url, headers=headers, json=payload)
+        # Verificar existencia de usuario
+        if user_exists(numero_real):
+            puede_responder = update_conversation(numero_real)
+            if not puede_responder:
+                return "EVENT_RECEIVED", 200
 
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Documento enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar documento ({response.status_code}): {response.text}" + Style.RESET_ALL)
+            # ---------------------- Respuestas de menú ----------------------
+            if texto_usuario == "main_menu_opt1":
+                sobre_nosotros_mensaje(numero_real)
+            elif texto_usuario == "main_menu_opt2":
+                pass  # Nivel inicial, aún sin plantilla
+            elif texto_usuario == "main_menu_opt3":
+                pass  # Nivel primario
+            elif texto_usuario == "main_menu_opt4":
+                pass  # Nivel secundario
+            elif texto_usuario == "main_menu_opt5":
+                contacto_mensaje(numero_real)
+            elif texto_usuario == "main_menu_opt6":
+                pass  # Inscripciones
+            # Mensajes de prueba o comandos especiales
+            elif texto_usuario == "..":
+                mensaje_prueba(numero_real, nombre)
+            # Mensajes no reconocidos
+            else:
+                send_text_message(numero_real, "No entendí el comando.")
+        else:
+            add_user(nombre, numero_real)
+            bienvenida_mensaje(numero_real, nombre)
 
-def send_link_message(to_number: str, link_url: str, link_title: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
+    except Exception as e:
+        print(Fore.RED + "Error procesando mensaje en main:" + Style.RESET_ALL, e)
 
-    # Texto con solo título y link en el cuerpo
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "text",
-        "text": {
-            "body": f"{link_title}\n{link_url}"
-        }
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Link enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar link ({response.status_code}): {response.text}" + Style.RESET_ALL)
-
-def send_contact_message(to_number: str, contact_name: str, contact_phone: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    vcard = (
-        f"BEGIN:VCARD\n"
-        f"VERSION:3.0\n"
-        f"N:{contact_name};;;;\n"
-        f"FN:{contact_name}\n"
-        f"TEL;TYPE=CELL:{contact_phone}\n"
-        f"END:VCARD"
-    )
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "contacts",
-        "contacts": [
-            {
-                "addresses": [],
-                "birthday": None,
-                "emails": [],
-                "name": {
-                    "formatted_name": contact_name,
-                    "first_name": contact_name,
-                    "last_name": ""
-                },
-                "org": None,
-                "phones": [
-                    {
-                        "phone": contact_phone,
-                        "type": "CELL"
-                    }
-                ],
-                "urls": []
-            }
-        ]
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code == 200:
-        print(Fore.GREEN + f"✓ Contacto enviado a {to_number}" + Style.RESET_ALL)
-    else:
-        print(Fore.RED + f"❌ Error al enviar contacto ({response.status_code}): {response.text}" + Style.RESET_ALL)
-
+    return "EVENT_RECEIVED", 200
 
 if __name__ == "__main__":
-    test_number = "541158633864"  # Cambiá por tu número con código de país sin +
-
-    print("Probando envíos a", test_number)
-
-    send_text_message(test_number, "Mensaje de prueba texto")
-    send_menu_buttons(test_number, "Seleccioná una opción")
-    send_img_message(test_number, 4022766811309944, "Imagen de prueba")
-    send_sticker_message(test_number, 1427225991900157)
-    send_pdf_message(test_number, 1920025175507231, "documento_de_prueba.pdf")
-    send_link_message(test_number, "https://www.ejemplo.com", "Título del enlace")
-    send_contact_message(test_number, "Juan Pérez", "+5491158633864")
+    port = int(os.getenv("PORT", 5000))
+    print(Fore.CYAN + f"🚀 Servidor corriendo en http://0.0.0.0:{port}" + Style.RESET_ALL)
+    app.run(host="0.0.0.0", port=port, debug=True)
