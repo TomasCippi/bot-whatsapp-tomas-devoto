@@ -10,17 +10,20 @@ from functions.hash_utils import get_identifier_hash
 from functions.send_messages import send_text_message
 from functions.templates_messages import *
 
-# ------------------- Limpiar tabla users para pruebas -------------------
 DB_PATH = "database.db"
-conn = sqlite3.connect(DB_PATH)
+
+# ------------------- Limpiar tabla users para pruebas -------------------
+""" conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 cursor.execute("DELETE FROM users")
 conn.commit()
 conn.close()
-print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL) 
+print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL) """
 
 load_dotenv()
 app = Flask(__name__)
+
+TIEMPO_BIENVENIDA = {"hours": 5, "minutes": 0, "seconds": 0}  # tiempo de espera para bienvenida devuelta
 
 def update_conversation(numero_real):
     """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
@@ -55,29 +58,22 @@ def update_conversation(numero_real):
 
 def verificar_bienvenida_devuelta(numero_real, nombre):
     """
-    Verifica si han pasado TIEMPO_ESPERA desde el último mensaje enviado al usuario.
-    Si sí, envía la bienvenida de regreso y el menú principal.
+    Envía bienvenida devuelta si pasaron TIEMPO_BIENVENIDA desde el último mensaje enviado.
     Retorna True si se envió la bienvenida (ignorar el mensaje actual).
     """
-
-    TIEMPO_ESPERA = {"hours": 24, "minutes": 0, "seconds": 0}
-
     numero_hash = get_identifier_hash(numero_real)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
     cursor.execute("SELECT ultimo_mensaje_enviado FROM users WHERE numero = ?", (numero_hash,))
     row = cursor.fetchone()
     fecha_actual = datetime.now()
 
+    # Usuario nuevo o sin último mensaje enviado → enviar bienvenida
     if not row or not row[0]:
-        # Usuario nuevo o sin valor → enviar bienvenida devuelta
         bienvenida_devuelta_mensaje(numero_real, nombre)
         send_menu_list(numero_real, "¿En qué podemos ayudarte hoy?", opciones_menu_principal)
         cursor.execute("""
-            UPDATE users
-            SET ultimo_mensaje_enviado = ?
-            WHERE numero = ?
+            UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?
         """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
         conn.commit()
         conn.close()
@@ -86,12 +82,10 @@ def verificar_bienvenida_devuelta(numero_real, nombre):
     ultimo_enviado = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
     diferencia = fecha_actual - ultimo_enviado
 
-    if diferencia >= timedelta(**TIEMPO_ESPERA):
+    if diferencia >= timedelta(**TIEMPO_BIENVENIDA):
         bienvenida_devuelta_mensaje(numero_real, nombre)
         cursor.execute("""
-            UPDATE users
-            SET ultimo_mensaje_enviado = ?
-            WHERE numero = ?
+            UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?
         """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
         conn.commit()
         conn.close()
@@ -111,31 +105,52 @@ def webhook_receive():
         entry = data['entry'][0]
         change = entry['changes'][0]['value']
 
-        # Verificar si hay mensajes
+        # Ignorar si no hay mensajes
         if 'messages' not in change or not change['messages']:
             return "EVENT_RECEIVED", 200
 
-        nombre = change['contacts'][0]['profile']['name']
-        numero_real = normalizar_numero(change['contacts'][0]['wa_id'])
+        contacto = change['contacts'][0]
+        nombre = contacto['profile']['name']
+        numero_real = normalizar_numero(contacto['wa_id'])
         mensaje = change['messages'][0]
 
+        # Determinar tipo de mensaje
         texto_usuario = None
-
         if 'text' in mensaje and 'body' in mensaje['text'] and mensaje['text']['body'].strip():
             texto_usuario = mensaje['text']['body'].strip().lower()
         elif 'interactive' in mensaje and mensaje['interactive']['type'] == 'list_reply' and 'id' in mensaje['interactive']['list_reply']:
             texto_usuario = mensaje['interactive']['list_reply']['id']
 
-        # Si no hay texto o id, ignorar el mensaje completamente
+        # Si no hay texto → ignorar
         if not texto_usuario:
             return "EVENT_RECEIVED", 200
 
+        # Después de determinar texto_usuario
+        mensaje_id = mensaje['id']
+
+        # Evitar procesar mensajes duplicados (último ID recibido)
+        numero_hash = get_identifier_hash(numero_real)
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT ultimo_id_recibido FROM users WHERE numero = ?", (numero_hash,))
+        row = cursor.fetchone()
+        if row and row[0] == mensaje_id:
+            # Mensaje idéntico al último recibido → ignorar
+            conn.close()
+            return "EVENT_RECEIVED", 200
+
+        # Guardar como último mensaje recibido
+        cursor.execute("""
+            UPDATE users SET ultimo_id_recibido = ? WHERE numero = ?
+        """, (mensaje_id, numero_hash))
+        conn.commit()
+        conn.close()
 
         print(f"{Fore.CYAN}📩 Mensaje recibido de {nombre} ({numero_real}): '{texto_usuario}'{Style.RESET_ALL}")
 
+        # Verificar usuario
         if user_exists(numero_real):
-            puede_responder = update_conversation(numero_real)
-            if not puede_responder:
+            if not update_conversation(numero_real):
                 return "EVENT_RECEIVED", 200
 
             if verificar_bienvenida_devuelta(numero_real, nombre):
@@ -159,6 +174,7 @@ def webhook_receive():
             else:
                 send_text_message(numero_real, "No entendí el comando.")
         else:
+            # Usuario nuevo
             add_user(nombre, numero_real)
             bienvenida_mensaje(numero_real, nombre)
 

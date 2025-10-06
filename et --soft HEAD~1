@@ -1,0 +1,47 @@
+[33mcommit ecc5ae314714752b9d1fd55d824e9cffb151c026[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Mon Oct 6 17:21:41 2025 -0300
+
+    Evitar procesar mensajes duplicados
+
+[33mcommit 5ed7238dde88b2a62026ee902b4fb47140351870[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Mon Oct 6 17:03:35 2025 -0300
+
+    Solucion al problema, el bot no manda mensajes salvo que le hablen, no manda mensajes sin querer
+
+[33mcommit 545cde4710b2512552dd97873f3aa4c69c219ba4[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Mon Oct 6 16:42:19 2025 -0300
+
+    Funcion de volver a saludar dentro de las horas que especifiquen
+
+[33mcommit 91bcda8bf751951891206e10aeebc83265b591fc[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Mon Oct 6 16:09:22 2025 -0300
+
+    Funcion de responder mensajes, menus, creacion de algunos templates
+
+[33mcommit 2b124bc68573fe1a2868183f2efd3a7a9c3768f5[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Thu Aug 7 21:07:15 2025 -0300
+
+    creacion de funciones para mandar todos los mensajes, pdfs, imagenes, texto, etc
+
+[33mcommit d3dde327550c335e6f6c069c259055a69350fc1f[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Thu Aug 7 18:45:44 2025 -0300
+
+    Creacion de archivo listen para escuchar los mensajes recibidos
+
+[33mcommit 363eab9d320177d62f195bbae95a08d3fecfdb5b[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Thu Aug 7 18:15:13 2025 -0300
+
+    configuracion y verificacion del webhook, creacion del .env para credenciales
+
+[33mcommit 2c98dbedc1a349ef10e8f021918cc5b4392fbfc2[m
+Author: Tomás Cippitelli <tomas.mcippitelli@gmail.com>
+Date:   Wed Aug 6 16:33:54 2025 -0300
+
+    creacion del entorno, archivos, carpetas, etc

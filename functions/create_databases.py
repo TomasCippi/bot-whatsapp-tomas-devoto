@@ -18,7 +18,8 @@ def create_tables():
         conversacion_iniciada INTEGER DEFAULT 0,
         estado BOOLEAN DEFAULT 0,
         ultimo_mensaje TEXT,
-        ultimo_mensaje_enviado TEXT
+        ultimo_mensaje_enviado TEXT,
+        ultimo_id_recibido TEXT
     )
     """)
 
