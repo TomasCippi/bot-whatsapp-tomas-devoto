@@ -17,7 +17,6 @@ def create_tables():
         fecha_primera_vez TEXT NOT NULL,
         conversacion_iniciada INTEGER DEFAULT 0,
         estado REAL DEFAULT 0,
-        ultimo_mensaje TEXT,
         ultimo_mensaje_enviado TEXT,
         ultimo_id_recibido TEXT
     )

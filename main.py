@@ -5,43 +5,30 @@ from colorama import Fore, Style
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from functions.verify_webhook import verify_webhook
-from functions.db_utils import *
-from functions.hash_utils import *
-from functions.send_messages import *
+from functions.db_utils import normalizar_numero, add_user, user_exists, get_user_state, set_user_state, verificar_bienvenida_devuelta
+from functions.hash_utils import get_identifier_hash
 from functions.templates_messages import *
 
 DB_PATH = "database.db"
 
 # ------------------- Limpiar tabla users para pruebas -------------------
-""" conn = sqlite3.connect(DB_PATH)
-cursor = conn.cursor()
-cursor.execute("DELETE FROM users")
-conn.commit()
-conn.close()
-print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL)  """
+def limpiar_table():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users")
+    conn.commit()
+    conn.close()
+    print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL)
 
 load_dotenv()
 app = Flask(__name__)
 
-TIEMPO_BIENVENIDA = {"hours": 5, "minutes": 0, "seconds": 0}  # tiempo de espera para bienvenida devuelta
+clean_log = True  # True = silencia los logs de Flask, False = los muestra
 
-def get_user_state(numero_real):
-    numero_hash = get_identifier_hash(numero_real)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT estado FROM users WHERE numero = ?", (numero_hash,))
-    row = cursor.fetchone()
-    conn.close()
-    return row[0] if row else 0
-
-def set_user_state(numero_real, estado):
-    numero_hash = get_identifier_hash(numero_real)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE users SET estado = ? WHERE numero = ?", (estado, numero_hash))
-    conn.commit()
-    conn.close()
-
+if clean_log:
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)  # solo errores graves aparecerán
 
 def update_conversation(numero_real):
     """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
@@ -74,41 +61,76 @@ def update_conversation(numero_real):
     conn.close()
     return True
 
-def verificar_bienvenida_devuelta(numero_real, nombre):
-    numero_hash = get_identifier_hash(numero_real)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT ultimo_mensaje_enviado FROM users WHERE numero = ?", (numero_hash,))
-    row = cursor.fetchone()
-    fecha_actual = datetime.now()
+def manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario):
+    if estado_actual == 0:
+        # Menú principal
+        if texto_usuario == "main_menu_opt1":  # Sobre Nosotros
+            sobre_nosotros_mensaje(numero_hash, nombre, numero_real)
+        elif texto_usuario == "main_menu_opt2":  # Nivel Inicial
+            set_user_state(numero_real, 2.1)
+            nivel_inicial_message(numero_hash, nombre, numero_real)
+        elif texto_usuario == "main_menu_opt3":  # Nivel Primario
+            set_user_state(numero_real, 2.2)
+            nivel_primario_message(numero_hash, nombre, numero_real)
+        elif texto_usuario == "main_menu_opt4":  # Nivel Secundario
+            set_user_state(numero_real, 2.3)
+            nivel_secundario_message(numero_hash, nombre, numero_real)
+        elif texto_usuario == "main_menu_opt5":  # Contacto
+            contacto_mensaje(numero_hash, nombre, numero_real)
+        elif texto_usuario == "main_menu_opt6":  # Inscripciones
+            pass
+        else:
+            main_error(numero_hash, nombre, numero_real)
 
-    # Si nunca se envió, enviar la bienvenida
-    if not row or not row[0]:
-        # No hacemos aquí return True, solo inicializamos la fecha sin enviar aún
-        cursor.execute("""
-            UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?
-        """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
-        conn.commit()
-        conn.close()
-        return False  # no se envía ahora, se hace después en el flujo principal
+    # --------------------------- Mensajes sobre nivel inicial 📘 --------------------------- #
+    elif estado_actual == 2.1:
+        if texto_usuario == "menu_nivel_inicial_opt1":
+            nivel_inicial_propuestas_pedagogicas(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_inicial_opt2":
+            nivel_inicial_talleres_optativos(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_inicial_opt3":
+            nivel_inicial_servicios_adicionales(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_inicial_opt4":
+            nivel_inicial_horarios(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_inicial_opt5":
+            set_user_state(numero_real, 0)
+            main_menu_devuelta(numero_hash, nombre, numero_real)
+        else:
+            nivel_inicial_error(numero_hash, nombre, numero_real)
 
-    ultimo_enviado = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
-    diferencia = fecha_actual - ultimo_enviado
+    # --------------------------- Mensajes sobre nivel primario 📙 --------------------------- #
+    elif estado_actual == 2.2:
+        if texto_usuario == "menu_nivel_primario_opt1":
+            nivel_primario_propuestas_pedagogicas(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_primario_opt2":
+            nivel_primario_talleres_optativos(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_primario_opt3":
+            nivel_primario_algunos_proyectos(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_primario_opt4":
+            nivel_primario_servicios_adicionales(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_primario_opt5":
+            nivel_primario_horarios(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_primario_opt6":
+            set_user_state(numero_real, 0)
+            main_menu_devuelta(numero_hash, nombre, numero_real)
+        else:
+            nivel_primario_error(numero_hash, nombre, numero_real)
 
-    conn.close()
-    if diferencia >= timedelta(**TIEMPO_BIENVENIDA):
-        bienvenida_devuelta_mensaje(numero_real, nombre)
-        # Actualizar la fecha solo después de enviar
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?
-        """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
-        conn.commit()
-        conn.close()
-        return True
-
-    return False
+    # --------------------------- Mensajes sobre nivel secundario 📕 --------------------------- #
+    elif estado_actual == 2.3:
+        if texto_usuario == "menu_nivel_secundario_opt1":
+            nivel_secundario_propuestas_pedagogicas(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_secundario_opt2":
+            nivel_secundario_algunos_proyectos(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_secundario_opt3":
+            nivel_secundario_planes_estudio(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_secundario_opt4":
+            nivel_secundario_horarios(numero_hash, nombre, numero_real)
+        elif texto_usuario == "menu_nivel_secundario_opt5":
+            set_user_state(numero_real, 0)
+            main_menu_devuelta(numero_hash, nombre, numero_real)
+        else:
+            nivel_secundario_error(numero_hash, nombre, numero_real)
 
 @app.route("/webhook", methods=["GET"])
 def webhook_verify():
@@ -162,13 +184,16 @@ def webhook_receive():
         conn.commit()
         conn.close()
 
-        print(f"{Fore.CYAN}📩 Mensaje recibido de {nombre} ({numero_real}): '{texto_usuario}'{Style.RESET_ALL}")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        hash_corto = numero_hash[:8]  # solo los primeros 8 caracteres del hash
+
+        print(f"{Fore.YELLOW}[{timestamp}] 📩 Mensaje recibido de {nombre} | hash={hash_corto} | '{texto_usuario}'{Style.RESET_ALL}")
 
         # Verificar usuario
         if not user_exists(numero_real):
-            print(f"Usuario nuevo: {numero_real}")
+            print(f"{Fore.BLUE}[{timestamp}] 👤 Usuario nuevo agregado: {nombre} | hash={hash_corto} {Style.RESET_ALL}")
             add_user(nombre, numero_real)
-            bienvenida_mensaje(numero_real, nombre)
+            bienvenida_mensaje(numero_hash, nombre, numero_real)
             set_user_state(numero_real, 0)  # estado inicial
             return "EVENT_RECEIVED", 200
 
@@ -180,90 +205,10 @@ def webhook_receive():
         # --- Manejo de estado ---
         estado_actual = get_user_state(numero_real)
         # --------------------------- Menu principal --------------------------- #
-        if estado_actual == 0:
-            # Menú principal
-            if texto_usuario == "main_menu_opt1":  # Sobre Nosotros
-                sobre_nosotros_mensaje(numero_real)
-            elif texto_usuario == "main_menu_opt2":  # Nivel Inicial
-                set_user_state(numero_real, 2.1)
-                nivel_inicial_message(numero_real)
-            elif texto_usuario == "main_menu_opt3":  # Nivel Primario
-                set_user_state(numero_real, 2.2)
-                nivel_primario_message(numero_real)
-            elif texto_usuario == "main_menu_opt4":  # Nivel Secundario
-                set_user_state(numero_real, 2.3)
-                nivel_secundario_message(numero_real)
-            elif texto_usuario == "main_menu_opt5": # Contacto
-                contacto_mensaje(numero_real)
-            elif texto_usuario == "main_menu_opt6": # Inscripciones
-                pass
-            else:
-                main_error(numero_real)
-        # --------------------------- Mensajes sobre nivel inicial 📘 --------------------------- #
-        elif estado_actual == 2.1:
-            # Nivel Inicial
-            if texto_usuario == "menu_nivel_inicial_opt1":
-                nivel_inicial_propuestas_pedagogicas(numero_real)
+        
+        print(numero_real)
 
-            elif texto_usuario == "menu_nivel_inicial_opt2":
-                nivel_inicial_talleres_optativos(numero_real)
-
-            elif texto_usuario == "menu_nivel_inicial_opt3":
-                nivel_inicial_servicios_adicionales(numero_real)
-
-            elif texto_usuario == "menu_nivel_inicial_opt4":
-                nivel_inicial_horarios(numero_real)
-
-            elif texto_usuario == "menu_nivel_inicial_opt5":
-                set_user_state(numero_real, 0)
-                main_menu_devuelta(numero_real)
-
-            else:
-                nivel_inicial_error(numero_real)
-        # --------------------------- Mensajes sobre nivel primario 📙 --------------------------- #
-        elif estado_actual == 2.2:
-            # Nivel Inicial
-            if texto_usuario == "menu_nivel_primario_opt1":
-                nivel_primario_propuestas_pedagogicas(numero_real)
-
-            elif texto_usuario == "menu_nivel_primario_opt2":
-                nivel_primario_talleres_optativos(numero_real)
-
-            elif texto_usuario == "menu_nivel_primario_opt3":
-                nivel_primario_algunos_proyectos(numero_real)
-
-            elif texto_usuario == "menu_nivel_primario_opt4":
-                nivel_primario_servicios_adicionales(numero_real)
-
-            elif texto_usuario == "menu_nivel_primario_opt5":
-                nivel_primario_horarios(numero_real)
-
-            elif texto_usuario == "menu_nivel_primario_opt6":
-                set_user_state(numero_real, 0)
-                main_menu_devuelta(numero_real)
-
-            else:
-                nivel_primario_error(numero_real)
-
-        # --------------------------- Mensajes sobre nivel secundario 📕 --------------------------- #
-        elif estado_actual == 2.3:
-            # Nivel Secundario
-            if texto_usuario == "menu_nivel_secundario_opt1":
-                nivel_secundario_propuestas_pedagogicas(numero_real)
-            elif texto_usuario == "menu_nivel_secundario_opt2":
-                nivel_secundario_algunos_proyectos(numero_real)
-            elif texto_usuario == "menu_nivel_secundario_opt3":
-                nivel_secundario_planes_estudio(numero_real)
-            
-            elif texto_usuario == "menu_nivel_secundario_opt4":
-                nivel_secundario_horarios(numero_real)
-            
-            elif texto_usuario == "menu_nivel_secundario_opt5":
-                set_user_state(numero_real, 0)
-                main_menu_devuelta(numero_real)
-
-            else:
-                nivel_secundario_error(numero_real)
+        manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario)
 
     except Exception as e:
         print(Fore.RED + "Error procesando mensaje en main:" + Style.RESET_ALL, e)
@@ -272,6 +217,7 @@ def webhook_receive():
 
 
 if __name__ == "__main__":
+    limpiar_table()
     port = int(os.getenv("PORT", 5000))
     print(Fore.CYAN + f"🚀 Servidor corriendo en http://0.0.0.0:{port}" + Style.RESET_ALL)
     app.run(host="0.0.0.0", port=port, debug=True)

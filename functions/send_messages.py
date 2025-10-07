@@ -2,12 +2,11 @@ import os
 import requests
 from dotenv import load_dotenv
 from colorama import Fore, Style
+from datetime import datetime
 
 load_dotenv()
 
-test = False
-
-def send_menu_list(to_number: str, text: str, options: list):
+def send_menu_list(number_hash:str, name:str ,to_number: str, text: str, options: list, ):
     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
     headers = {
         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
@@ -32,16 +31,18 @@ def send_menu_list(to_number: str, text: str, options: list):
             }
         }
     }
-    response = requests.post(url, headers=headers, json=payload)
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
-    else:
-        pass
 
-def send_text_message(to_number: str, message: str):
+    hash_corto = number_hash[:8]  # solo los primeros 8 caracteres del hash
+
+    response = requests.post(url, headers=headers, json=payload)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if response.status_code == 200:
+        print(f"{Fore.GREEN}[{timestamp}] ✅ MENU ENVIADO | Usuario: {name} | Hash: {hash_corto}{Style.RESET_ALL}")
+    else:
+        print(f"{Fore.RED}[{timestamp}] ❌ ERROR AL ENVIAR MENÚ | Usuario: {name} | Hash: {hash_corto} | Status: {response.status_code} | Detalle: {response.text}{Style.RESET_ALL}")
+
+def send_text_message(number_hash:str, name:str ,to_number: str, message: str):
     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
     headers = {
         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
@@ -54,15 +55,17 @@ def send_text_message(to_number: str, message: str):
         "text": {"body": message}
     }
     response = requests.post(url, headers=headers, json=payload)
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
-    else:
-        pass
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def send_img_message(to_number: str, media_id: str, caption: str = ""):
+    hash_corto = number_hash[:8]  # solo los primeros 8 caracteres del hash
+
+    if response.status_code == 200:
+        print(f"{Fore.GREEN}[{timestamp}] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: {name} | Hash: {hash_corto}{Style.RESET_ALL}")
+    else:
+        print(to_number)
+        print(f"{Fore.RED}[{timestamp}] ❌ ERROR AL ENVIAR MENSAJE DE TEXTO | Usuario: {name} | Hash: {hash_corto} | Status: {response.status_code} | Detalle: {response.text}{Style.RESET_ALL}")
+
+def send_img_message(number_hash:str, name:str ,to_number: str, media_id: str, caption: str = ""):
     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
     headers = {
         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
@@ -78,138 +81,141 @@ def send_img_message(to_number: str, media_id: str, caption: str = ""):
         }
     }
 
-    response = requests.post(url, headers=headers, json=payload)
-
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"📸 Imagen enviada correctamente a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar imagen: {response.status_code} - {response.text}" + Style.RESET_ALL)
-    else:
-        pass
-
-def send_sticker_message(to_number: str, media_id: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to_number,
-        "type": "sticker",
-        "sticker": {
-            "id": media_id
-        }
-    }
+    hash_corto = number_hash[:8]  # solo los primeros 8 caracteres del hash
 
     response = requests.post(url, headers=headers, json=payload)
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if response.status_code == 200:
+        print(f"{Fore.GREEN}[{timestamp}] ✅ IMAGEN ENVIADO | Usuario: {name} | Hash: {hash_corto}{Style.RESET_ALL}")
     else:
-        pass
+        print(f"{Fore.RED}[{timestamp}] ❌ ERROR AL ENVIAR IMAGEN | Usuario: {name} | Hash: {hash_corto} | Status: {response.status_code} | Detalle: {response.text}{Style.RESET_ALL}")
 
-def send_pdf_message(to_number: str, media_id: str, filename: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "document",
-        "document": {
-            "id": media_id,
-            "filename": filename
-        }
-    }
 
-    response = requests.post(url, headers=headers, json=payload)
 
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
-    else:
-        pass
+# ---------------------------------------------------------- Otras Funciones ---------------------------------------------------------- #
+# def send_sticker_message(to_number: str, media_id: str):
+#     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+#     headers = {
+#         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+#         "Content-Type": "application/json"
+#     }
+#     payload = {
+#         "messaging_product": "whatsapp",
+#         "recipient_type": "individual",
+#         "to": to_number,
+#         "type": "sticker",
+#         "sticker": {
+#             "id": media_id
+#         }
+#     }
 
-def send_link_message(to_number: str, link_url: str, link_title: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
+#     response = requests.post(url, headers=headers, json=payload)
+#     if test:
+#         if response.status_code == 200:
+#             print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+#         else:
+#             print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+#     else:
+#         pass
 
-    # Texto con solo título y link en el cuerpo
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "text",
-        "text": {
-            "body": f"{link_title}\n{link_url}"
-        }
-    }
+# def send_pdf_message(to_number: str, media_id: str, filename: str):
+#     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+#     headers = {
+#         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+#         "Content-Type": "application/json"
+#     }
+#     payload = {
+#         "messaging_product": "whatsapp",
+#         "to": to_number,
+#         "type": "document",
+#         "document": {
+#             "id": media_id,
+#             "filename": filename
+#         }
+#     }
 
-    response = requests.post(url, headers=headers, json=payload)
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
-    else:
-        pass
+#     response = requests.post(url, headers=headers, json=payload)
 
-def send_contact_message(to_number: str, contact_name: str, contact_phone: str):
-    url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    vcard = (
-        f"BEGIN:VCARD\n"
-        f"VERSION:3.0\n"
-        f"N:{contact_name};;;;\n"
-        f"FN:{contact_name}\n"
-        f"TEL;TYPE=CELL:{contact_phone}\n"
-        f"END:VCARD"
-    )
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "contacts",
-        "contacts": [
-            {
-                "addresses": [],
-                "birthday": None,
-                "emails": [],
-                "name": {
-                    "formatted_name": contact_name,
-                    "first_name": contact_name,
-                    "last_name": ""
-                },
-                "org": None,
-                "phones": [
-                    {
-                        "phone": contact_phone,
-                        "type": "CELL"
-                    }
-                ],
-                "urls": []
-            }
-        ]
-    }
+#     if test:
+#         if response.status_code == 200:
+#             print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+#         else:
+#             print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+#     else:
+#         pass
 
-    response = requests.post(url, headers=headers, json=payload)
-    if test:
-        if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
-    else:
-        pass
+# def send_link_message(to_number: str, link_url: str, link_title: str):
+#     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+#     headers = {
+#         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+#         "Content-Type": "application/json"
+#     }
+
+#     # Texto con solo título y link en el cuerpo
+#     payload = {
+#         "messaging_product": "whatsapp",
+#         "to": to_number,
+#         "type": "text",
+#         "text": {
+#             "body": f"{link_title}\n{link_url}"
+#         }
+#     }
+
+#     response = requests.post(url, headers=headers, json=payload)
+#     if test:
+#         if response.status_code == 200:
+#             print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+#         else:
+#             print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+#     else:
+#         pass
+
+# def send_contact_message(to_number: str, contact_name: str, contact_phone: str):
+#     url = f"https://graph.facebook.com/{os.getenv('META_API_VERSION')}/{os.getenv('META_PHONE_NUMBER_ID')}/messages"
+#     headers = {
+#         "Authorization": f"Bearer {os.getenv('META_TOKEN')}",
+#         "Content-Type": "application/json"
+#     }
+#     vcard = (
+#         f"BEGIN:VCARD\n"
+#         f"VERSION:3.0\n"
+#         f"N:{contact_name};;;;\n"
+#         f"FN:{contact_name}\n"
+#         f"TEL;TYPE=CELL:{contact_phone}\n"
+#         f"END:VCARD"
+#     )
+#     payload = {
+#         "messaging_product": "whatsapp",
+#         "to": to_number,
+#         "type": "contacts",
+#         "contacts": [
+#             {
+#                 "addresses": [],
+#                 "birthday": None,
+#                 "emails": [],
+#                 "name": {
+#                     "formatted_name": contact_name,
+#                     "first_name": contact_name,
+#                     "last_name": ""
+#                 },
+#                 "org": None,
+#                 "phones": [
+#                     {
+#                         "phone": contact_phone,
+#                         "type": "CELL"
+#                     }
+#                 ],
+#                 "urls": []
+#             }
+#         ]
+#     }
+
+#     response = requests.post(url, headers=headers, json=payload)
+#     if test:
+#         if response.status_code == 200:
+#             print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+#         else:
+#             print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+#     else:
+#         pass

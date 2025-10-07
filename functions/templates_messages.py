@@ -1,7 +1,5 @@
 import random
-from dotenv import load_dotenv
-from colorama import Fore, Style
-from .send_messages import *
+from .send_messages import send_img_message, send_menu_list, send_text_message
 
 def mensaje_prueba(number, name):
     pass
@@ -16,18 +14,18 @@ opciones_menu_principal = [
         {"id": "main_menu_opt6", "title": "Inscripciones 📩"}
 ]
 
-def bienvenida_mensaje(to_number:str, to_name):
-    send_text_message(to_number, f"¡Hola *{to_name}*! 👋 Bienvenido/a al bot del *Tomas Devoto*. Estamos felices de que nos escribas 😃.")
-    send_text_message(to_number, """
+def bienvenida_mensaje(number_hash, name, to_number:str):
+    send_text_message(number_hash, name,to_number, f"¡Hola *{name}*! 👋 Bienvenido/a al bot del *Tomas Devoto*. Estamos felices de que nos escribas 😃.")
+    send_text_message(number_hash, name,to_number, """
 🎯 Este bot funciona a *través de menús* y *solo responde los mensajes que aparecen como opciones o los que te indique*. ¡Sigue las instrucciones y será muy fácil de usar!
 """)
     body_text = "En qué podemos ayudarte hoy?"
     
     opciones = opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def bienvenida_devuelta_mensaje(to_number:str, to_name):
+def bienvenida_devuelta_mensaje(number_hash, name,to_number:str, to_name):
     mini_mensajes = [
         "Esperamos que tengas un día increíble 😃",
         "Qué bueno verte otra vez por aquí 👋",
@@ -40,56 +38,56 @@ def bienvenida_devuelta_mensaje(to_number:str, to_name):
     # Mensaje completo combinado
     mensaje_completo = f"¡Bienvenido/a otra vez, *{to_name}*! {mensaje_aleatorio}"
     
-    send_text_message(to_number, mensaje_completo)
+    send_text_message(number_hash, name,to_number, mensaje_completo)
 
     body_text = "En qué podemos ayudarte hoy?"
     
     opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes principal --------------------------- #
-def main_error(to_number: str):
-    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Principal* para continuar.")
+def main_error(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Principal* para continuar.")
 
     body_text = "En qué podemos ayudarte hoy?"
     
     opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def main_menu_devuelta(to_number: str):
-    send_text_message(to_number, "Claro! volvamos al menu principal 😄")
+def main_menu_devuelta(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "Claro! volvamos al menu principal 😄")
 
     body_text = "En qué podemos ayudarte hoy?"
     
     opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes sobre nosotros 🏫 --------------------------- #
 
-def sobre_nosotros_mensaje(to_number: str):
-    send_text_message(to_number, "Claro! Te contaré un poco sobre el *Tomás Devoto* 😄🏫")
-    send_text_message(to_number, """
+def sobre_nosotros_mensaje(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "Claro! Te contaré un poco sobre el *Tomás Devoto* 😄🏫")
+    send_text_message(number_hash, name,to_number, """
 🎯 Nuestra misión es acompañar a nuestros alumnos en su desarrollo integral, formando personas autónomas, responsables y conscientes, capaces de construir su propio camino y de generar un impacto positivo en su comunidad."
 """)
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
                         En el *Tomas Devoto* contamos con:\n\n🏥 *Departamento médico*:\nque se encarga de la salud de nuestros estudiantes, ofreciendo atención básica y apoyo en casos de emergencias o consultas médicas\n\n👩‍🏫 *Equipo de orientación*:\nque acompaña a cada alumno, brindando asesoramiento académico y apoyo emocional, ayudándolos a superar dificultades y a tomar decisiones que favorezcan su desarrollo personal y educativo
                     """)
-    send_text_message(to_number, "📍 El *Tomas Devoto* se ubica en *Villa Urquiza*, en *Franklin D. Roosevelt 5678*")
+    send_text_message(number_hash, name,to_number, "📍 El *Tomas Devoto* se ubica en *Villa Urquiza*, en *Franklin D. Roosevelt 5678*")
 
     body_text = "En que otra cosa podemos ayudarte hoy?"
     
     opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes sobre contacto 💬 --------------------------- #
 
-def contacto_mensaje(to_number:str):
-    send_text_message(to_number, "¡Por supuesto! Estas son las formas en las que puedes contactarnos 😃💬")
-    send_text_message(to_number, """
+def contacto_mensaje(number_hash, name,to_number:str):
+    send_text_message(number_hash, name,to_number, "¡Por supuesto! Estas son las formas en las que puedes contactarnos 😃💬")
+    send_text_message(number_hash, name,to_number, """
 ✉️ Por *mail*:
 
 *Información General*:
@@ -104,9 +102,9 @@ secretaria.secundario@tomasdevoto.edu.ar
 📞 Por *telefono*:
 (011) 4571-2019                      
 """)
-    send_text_message(to_number, "¡Si nos escribes, nos contactaremos contigo lo antes posible!")
-    send_text_message(to_number, "🌐 Si quieres conocer más información, puedes visitar nuestra página web: https://tomasdevoto.edu.ar/")
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, "¡Si nos escribes, nos contactaremos contigo lo antes posible!")
+    send_text_message(number_hash, name,to_number, "🌐 Si quieres conocer más información, puedes visitar nuestra página web: https://tomasdevoto.edu.ar/")
+    send_text_message(number_hash, name,to_number, """
 📱 Para estar al día con nuestras novedades, síguenos en nuestras redes sociales!:
 *Instagram*:
 https://www.instagram.com/institutotomasdevoto/
@@ -118,7 +116,7 @@ http://www.youtube.com/@itdstreaming
     
     opciones = opciones_menu_principal
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes sobre inscripciones 📩 --------------------------- #
 
@@ -132,23 +130,23 @@ opciones_nivel_inicial_menu = [
         {"id": "menu_nivel_inicial_opt5", "title": "Menu anterior 🔙"}
 ]
 
-def nivel_inicial_message(to_number: str):
-    send_text_message(to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Inicial* 😆📘")
+def nivel_inicial_message(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Inicial* 😆📘")
 
-    send_text_message(to_number, "📌 En *Nivel Inicial*, los chicos y chicas aprenden jugando en un ambiente afectuoso y seguro. Fomentamos *solidaridad, respeto y empatía*, mientras desarrollan sus habilidades sociales y emocionales de manera integral.")
+    send_text_message(number_hash, name,to_number, "📌 En *Nivel Inicial*, los chicos y chicas aprenden jugando en un ambiente afectuoso y seguro. Fomentamos *solidaridad, respeto y empatía*, mientras desarrollan sus habilidades sociales y emocionales de manera integral.")
 
-    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.inicial@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-inicial/*")
+    send_text_message(number_hash, name,to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.inicial@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-inicial/*")
 
     body_text = "¿En qué lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_inicial_propuestas_pedagogicas(to_number:str):
-    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
+def nivel_inicial_propuestas_pedagogicas(number_hash, name,to_number:str):
+    send_text_message(number_hash, name,to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
     
-    send_text_message(to_number,"""
+    send_text_message(number_hash, name,to_number,"""
 🇮🇹 *Italiano*: Introducimos a los niños y niñas en la lengua italiana desde los 3 años mediante actividades lúdicas, literarias y musicales.
 
 🤸 *Educación Física*: Desde los 2 años, los alumnos exploran y desarrollan su motricidad a través de propuestas de juego y descubrimiento.
@@ -162,12 +160,12 @@ def nivel_inicial_propuestas_pedagogicas(to_number:str):
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_inicial_talleres_optativos(to_number: str):
-    send_text_message(to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
+def nivel_inicial_talleres_optativos(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 🖌️ *Taller de Artes Visuales*: Fomentamos el conocimiento artístico mediante diferentes recursos y técnicas, ofreciendo un espacio de juego y creatividad que permite desarrollar la expresión y comunicación personal.
 
 🏃 *Taller de Expresión y Movimiento*: Los niños acceden a prácticas corporales que, a través del movimiento, les permiten explorar y conocer el mundo de diversas formas.
@@ -184,12 +182,12 @@ def nivel_inicial_talleres_optativos(to_number: str):
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_inicial_servicios_adicionales(to_number: str):
-    send_text_message(to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
+def nivel_inicial_servicios_adicionales(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *🍽️ Comedor*: Nuestro comedor ofrece comidas nutritivas y deliciosas para que disfrutes tus días en la escuela. ¡Buen provecho!
 
 *🚌 Transporte*: Contamos con transporte seguro y cómodo para que llegues y vuelvas a casa sin preocupaciones. ¡Viaja tranquilo!
@@ -199,12 +197,12 @@ def nivel_inicial_servicios_adicionales(to_number: str):
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_inicial_horarios(to_number: str):
-    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+def nivel_inicial_horarios(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🕒 Los *horarios* son los siguientes:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *Turno mañana*:
 Sala de *2 años/3 años*   -   8:30hs/12:15hs
 Sala de *4 años/5 años*   -   8:30hs/12:30hs
@@ -217,16 +215,16 @@ Sala de *2 años/3 años*   -   13:20hs/16:55hs
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_inicial_error(to_number: str):
-    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Inicial* para continuar.")
+def nivel_inicial_error(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Inicial* para continuar.")
 
     body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes sobre nivel primario 📙 --------------------------- #
 
@@ -239,23 +237,23 @@ opciones_nivel_primario_menu = [
         {"id": "menu_nivel_primario_opt6", "title": "Menu anterior 🔙"}
 ]
 
-def nivel_primario_message(to_number: str):
-    send_text_message(to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Primario* 😆📙")
+def nivel_primario_message(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Primario* 😆📙")
 
-    send_text_message(to_number, "📌 En *Nivel Primario*, nuestro propósito es que nuestros alumnos y alumnas crezcan y aprendan en un ambiente *rico en experiencias* que inviten a descubrir el mundo interactuando con otros en una *saludable convivencia*.")
+    send_text_message(number_hash, name,to_number, "📌 En *Nivel Primario*, nuestro propósito es que nuestros alumnos y alumnas crezcan y aprendan en un ambiente *rico en experiencias* que inviten a descubrir el mundo interactuando con otros en una *saludable convivencia*.")
 
-    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.primaria@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel_primario/*")
+    send_text_message(number_hash, name,to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.primaria@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel_primario/*")
 
     body_text = "¿En qué lo podemos ayudar sobre *Nivel Primario*?"
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_propuestas_pedagogicas(to_number:str):
-    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
+def nivel_primario_propuestas_pedagogicas(number_hash, name,to_number:str):
+    send_text_message(number_hash, name,to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
     
-    send_text_message(to_number,"""
+    send_text_message(number_hash, name,to_number,"""
 🇮🇹🇬🇧 *Italiano e Inglés*: El italiano es nuestro idioma distintivo y se enseña de 1º a 7º grado, integrando cultura, tradiciones y valores de Italia mediante canciones, juegos, cuentos y material audiovisual.
 El inglés se ofrece como segundo idioma y puede reforzarse con talleres extracurriculares dos veces por semana en horario de la tarde.
 
@@ -278,12 +276,12 @@ El inglés se ofrece como segundo idioma y puede reforzarse con talleres extracu
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_talleres_optativos(to_number: str):
-    send_text_message(to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
+def nivel_primario_talleres_optativos(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 🖌️ *Taller de Arte*: Un espacio para disfrutar y crear, estimulando la creatividad, la percepción, la sensibilidad y la expresión. Fomenta la autonomía y la autogestión, potenciando el desarrollo integral de la personalidad de los alumnos.
 
 🥋 *Taller de Taekwondo*: Dictado por la tarde, enseña disciplina, autocontrol y respeto mutuo, promoviendo conductas no violentas y fortaleciendo valores personales.
@@ -295,12 +293,12 @@ def nivel_primario_talleres_optativos(to_number: str):
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_algunos_proyectos(to_number: str):
-        send_text_message(to_number, "🛠️ Algunos *proyectos* que hicimos:")
+def nivel_primario_algunos_proyectos(number_hash, name,to_number: str):
+        send_text_message(number_hash, name,to_number, "🛠️ Algunos *proyectos* que hicimos:")
 
-        send_text_message(to_number, """
+        send_text_message(number_hash, name,to_number, """
 🤝 *Proyecto Padrinos y Ahijados*: Los alumnos de 7° acompañan a los de 1° durante el año, compartiendo juegos, recreos, clases y actividades especiales, generando vínculos de confianza y afecto entre los más grandes y los recién ingresados.
 
 📚 *Animación a la Lectura*: Promovemos el disfrute de la lectura y la participación en la comunidad de lectores, fomentando la reflexión, la búsqueda de información y la expresión de emociones y sensaciones a través de la literatura.
@@ -318,12 +316,12 @@ def nivel_primario_algunos_proyectos(to_number: str):
         
         opciones = opciones_nivel_primario_menu
         
-        send_menu_list(to_number, body_text, opciones)
+        send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_servicios_adicionales(to_number: str):
-    send_text_message(to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
+def nivel_primario_servicios_adicionales(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *🍽️ Comedor*: Nuestro comedor ofrece comidas nutritivas y deliciosas para que disfrutes tus días en la escuela. ¡Buen provecho!
 
 *🚌 Transporte*: Contamos con transporte seguro y cómodo para que llegues y vuelvas a casa sin preocupaciones. ¡Viaja tranquilo!
@@ -333,12 +331,12 @@ def nivel_primario_servicios_adicionales(to_number: str):
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_horarios(to_number: str):
-    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+def nivel_primario_horarios(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🕒 Los *horarios* son los siguientes:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *Turno mañana*:
 
 *Ingreso*: 7:30 a 7:40hs
@@ -362,16 +360,16 @@ Taller de educación física en campo de deportes (modalidad obligatoria).
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_primario_error(to_number: str):
-    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Primario* para continuar.")
+def nivel_primario_error(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Primario* para continuar.")
 
     body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
     
     opciones = opciones_nivel_primario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
 # --------------------------- Mensajes sobre nivel secundario 📕 --------------------------- #
 
@@ -383,23 +381,23 @@ opciones_nivel_secundario_menu = [
         {"id": "menu_nivel_secundario_opt5", "title": "Menu anterior 🔙"}
 ]
 
-def nivel_secundario_message(to_number: str):
-    send_text_message(to_number, "¡Genial! Te contaré un poco sobre nuestro *Nivel Secundario* 😆📕")
+def nivel_secundario_message(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "¡Genial! Te contaré un poco sobre nuestro *Nivel Secundario* 😆📕")
 
-    send_text_message(to_number, "📌 En *Nivel Secundario* buscamos el desarrollo integral de los alumnos, fomentando *autonomía, resiliencia y libertad responsable*, para que puedan valorar lo verdadero y bueno, y convertirse en agentes de cambio positivo en su comunidad.")
+    send_text_message(number_hash, name,to_number, "📌 En *Nivel Secundario* buscamos el desarrollo integral de los alumnos, fomentando *autonomía, resiliencia y libertad responsable*, para que puedan valorar lo verdadero y bueno, y convertirse en agentes de cambio positivo en su comunidad.")
 
-    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.secundario@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-secundario/*")
+    send_text_message(number_hash, name,to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.secundario@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-secundario/*")
 
     body_text = "¿En qué lo podemos ayudar sobre *Nivel Secundario*?"
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_secundario_propuestas_pedagogicas(to_number:str):
-    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
+def nivel_secundario_propuestas_pedagogicas(number_hash, name,to_number:str):
+    send_text_message(number_hash, name,to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 💬 *Bachiller en Comunicación*:
 Forma a los y las estudiantes en la interpretación y producción de procesos comunicacionales. Aborda las dimensiones interpersonales, institucionales y comunitarias desde una perspectiva intercultural y multimedial. Integra saberes de las ciencias sociales (filosofía, historia, sociología, economía, política, psicología, etc.) para comprender y producir prácticas comunicativas.
 *Bloques*:
@@ -415,7 +413,7 @@ Brinda herramientas para analizar fenómenos sociales, económicos y organizacio
 - Regulación de la actividad económica
 """)
     
-    send_text_message(to_number,"""
+    send_text_message(number_hash, name,to_number,"""
 🗣️ *Lenguas Adicionales (Italiano e Inglés)*: Permiten conocer los fenómenos del lenguaje humano y acceder a distintas culturas. A través del contraste con la lengua materna, promueven la reflexión sobre la diversidad y la alteridad. Su enseñanza se organiza en torno a prácticas sociales del lenguaje.
 
 🏃‍♂️ *Educación Física y Deportes*: Favorece el desarrollo corporal, lúdico y motor, promoviendo salud, autoestima y conciencia del cuidado propio y del entorno. Incluye prácticas deportivas, expresivas y recreativas, reconociendo su valor social y formativo. Intensificación profundiza en la participación de deportes como:
@@ -434,12 +432,12 @@ fomentando valores como solidaridad, cooperación y compromiso.
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_secundario_algunos_proyectos(to_number: str):
-    send_text_message(to_number, "🧩 *Algunos proyectos*:")
+def nivel_secundario_algunos_proyectos(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🧩 *Algunos proyectos*:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *📚 Educación Sexual Integral (ESI)*: La ESI se enseña de manera sistemática en todos los niveles de la CABA, garantizando derechos, igualdad de acceso a la información y formación, y cumpliendo la ley Nº 2110/06. Aborda la sexualidad de forma integral: psicológica, ética, biológica, jurídica, sociocultural, histórica y de salud. Se aplica mediante:
 - Contenidos transversales en distintas materias.
 - Jornadas ESI según la Agenda Educativa de la Ciudad.
@@ -463,25 +461,25 @@ def nivel_secundario_algunos_proyectos(to_number: str):
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_secundario_planes_estudio(to_number: str):
-    send_text_message(to_number, "📝 Estos son nuestros *planes de estudio*:")
+def nivel_secundario_planes_estudio(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "📝 Estos son nuestros *planes de estudio*:")
 
-    send_img_message(to_number, "688614154256907", "Plan de estudio *ECONOMIA*")
+    send_img_message(number_hash, name,to_number, "688614154256907", "Plan de estudio *ECONOMIA*")
 
-    send_img_message(to_number, "1105595595068920", "Plan de estudio *COMUNICACION*")
+    send_img_message(number_hash, name,to_number, "1105595595068920", "Plan de estudio *COMUNICACION*")
 
     body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_secundario_horarios(to_number: str):
-    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+def nivel_secundario_horarios(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🕒 Los *horarios* son los siguientes:")
 
-    send_text_message(to_number, """
+    send_text_message(number_hash, name,to_number, """
 *Turno mañana*:
 Lunes a viernes   -   7:20hs/13:20hs
 
@@ -494,13 +492,13 @@ Lunes y Jueves o Martes y Jueves   -   entre las 14:00 hs. y las 18:00 hs.
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
 
-def nivel_secundario_error(to_number: str):
-    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Secundario* para continuar.")
+def nivel_secundario_error(number_hash, name,to_number: str):
+    send_text_message(number_hash, name,to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Secundario* para continuar.")
 
     body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
     
     opciones = opciones_nivel_secundario_menu
     
-    send_menu_list(to_number, body_text, opciones)
+    send_menu_list(number_hash, name,to_number, body_text, opciones)
