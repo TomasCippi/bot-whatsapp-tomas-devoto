@@ -82,9 +82,9 @@ def send_img_message(to_number: str, media_id: str, caption: str = ""):
 
     if test:
         if response.status_code == 200:
-            print(Fore.GREEN + f"✓ Menú con botones enviado a {to_number}" + Style.RESET_ALL)
+            print(Fore.GREEN + f"📸 Imagen enviada correctamente a {to_number}" + Style.RESET_ALL)
         else:
-            print(Fore.RED + f"❌ Error al enviar menú ({response.status_code}): {response.text}" + Style.RESET_ALL)
+            print(Fore.RED + f"❌ Error al enviar imagen: {response.status_code} - {response.text}" + Style.RESET_ALL)
     else:
         pass
 

@@ -4,7 +4,7 @@ from colorama import Fore, Style
 from .send_messages import *
 
 def mensaje_prueba(number, name):
-    contacto_mensaje(number)
+    pass
 
 # --------------------------- Mensajes de bienvenida --------------------------- #
 opciones_menu_principal = [
@@ -48,10 +48,29 @@ def bienvenida_devuelta_mensaje(to_number:str, to_name):
     
     send_menu_list(to_number, body_text, opciones)
 
-# --------------------------- Mensajes sobre nosotros --------------------------- #
+# --------------------------- Mensajes principal --------------------------- #
+def main_error(to_number: str):
+    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Principal* para continuar.")
+
+    body_text = "En qué podemos ayudarte hoy?"
+    
+    opciones = opciones_menu_principal
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def main_menu_devuelta(to_number: str):
+    send_text_message(to_number, "Claro! volvamos al menu principal 😄")
+
+    body_text = "En qué podemos ayudarte hoy?"
+    
+    opciones = opciones_menu_principal
+    
+    send_menu_list(to_number, body_text, opciones)
+
+# --------------------------- Mensajes sobre nosotros 🏫 --------------------------- #
 
 def sobre_nosotros_mensaje(to_number: str):
-    send_text_message(to_number, "Genial! 😄 Te contaré un poco sobre el *Tomás Devoto*")
+    send_text_message(to_number, "Claro! Te contaré un poco sobre el *Tomás Devoto* 😄🏫")
     send_text_message(to_number, """
 🎯 Nuestra misión es acompañar a nuestros alumnos en su desarrollo integral, formando personas autónomas, responsables y conscientes, capaces de construir su propio camino y de generar un impacto positivo en su comunidad."
 """)
@@ -66,10 +85,10 @@ def sobre_nosotros_mensaje(to_number: str):
     
     send_menu_list(to_number, body_text, opciones)
 
-# --------------------------- Mensajes sobre contacto --------------------------- #
+# --------------------------- Mensajes sobre contacto 💬 --------------------------- #
 
 def contacto_mensaje(to_number:str):
-    send_text_message(to_number, "¡Por supuesto! 😃 Estas son las formas en las que puedes contactarnos:")
+    send_text_message(to_number, "¡Por supuesto! Estas son las formas en las que puedes contactarnos 😃💬")
     send_text_message(to_number, """
 ✉️ Por *mail*:
 
@@ -101,239 +120,387 @@ http://www.youtube.com/@itdstreaming
     
     send_menu_list(to_number, body_text, opciones)
 
-# --------------------------- Mensajes sobre inscripciones --------------------------- #
+# --------------------------- Mensajes sobre inscripciones 📩 --------------------------- #
 
-
-
-
-
-
-
-
-
+# --------------------------- Mensajes sobre nivel inicial 📘 --------------------------- #
 
 opciones_nivel_inicial_menu = [
-        {"id": "menu_nivel_inicial_opt1", "title": "Propuestas pedagogicas 💡"},
-        {"id": "menu_nivel_inicial_opt2", "title": "Horarios 🕒"},
-        {"id": "menu_nivel_inicial_opt3", "title": "Talleres optativos 🎨"},
-        {"id": "menu_nivel_inicial_opt4", "title": "Servicios adicionales 🧩"},
+        {"id": "menu_nivel_inicial_opt1", "title": "Propuestas pedagógicas 💡"},
+        {"id": "menu_nivel_inicial_opt2", "title": "Talleres optativos 🎨"},
+        {"id": "menu_nivel_inicial_opt3", "title": "Servicios adicionales 🧩"},
+        {"id": "menu_nivel_inicial_opt4", "title": "Horarios 🕒"},
         {"id": "menu_nivel_inicial_opt5", "title": "Menu anterior 🔙"}
 ]
 
 def nivel_inicial_message(to_number: str):
-    send_text_message(to_number, "Buenisimo! 😄 Te contaré un poco sobre *Nivel Inicial*")
-    send_text_message(to_number, "Promovemos aprender jugando en un entorno de afecto y confianza, donde se promueven valores como la empatía, la solidaridad y el respeto. Planificamos actividades lúdicas y significativas que fortalecen las capacidades cognitivas, sociales y expresivas de cada alumno. Integramos a las familias en la tarea educativa propiciando la comunicación, el diálogo constructivo y el respeto mutuo.")
-    
-    body_text = "En que lo podemos ayudar sobre *Nivel inicial*?"
+    send_text_message(to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Inicial* 😆📘")
+
+    send_text_message(to_number, "📌 En *Nivel Inicial*, los chicos y chicas aprenden jugando en un ambiente afectuoso y seguro. Fomentamos *solidaridad, respeto y empatía*, mientras desarrollan sus habilidades sociales y emocionales de manera integral.")
+
+    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.inicial@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-inicial/*")
+
+    body_text = "¿En qué lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
     send_menu_list(to_number, body_text, opciones)
 
-def nivel_inicial_propuestas_pedagogicas(to_number: str):
-    send_text_message(to_number, "💡 Algunas de nuestras propuestas *pedagogicas* en *Nivel inicial* son:")
-    send_text_message(to_number, """
-                        🇮🇹 *Italiano*:\nIniciamos a nuestros alumnos y alumnas en el conocimiento de la lengua italiana a partir de la sala de 3 años a través de propuestas lúdicas, literarias y musicales.\n\n🏐 *Educación fisica*:\nTrabajamos a partir de la sala de 2 años con propuestas de enseñanza para que el alumno/a explore, descubra y ponga en juego su motricidad.\n\n💻 *Educación digital*:\nIncluimos recursos digitales en el nivel inicial para que nuestros alumnos y alumnas desarrollen desde temprana edad habilidades que les permitirá seguir progresando en su trayectoria escolar.\n\n🎶 *Educación musical*:\nOfrecemos diferentes experiencias musicales para sensibilizar a los niños y a las niñas sobre el mundo sonoro con el fin de ampliar y enriquecer su repertorio cultural despertando el placer por la música y el goce por el hacer musical.
-                    """)
+def nivel_inicial_propuestas_pedagogicas(to_number:str):
+    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
     
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel inicial*?"
-    
-    opciones = opciones_nivel_inicial_menu
-    
-    send_menu_list(to_number, body_text, opciones)
+    send_text_message(to_number,"""
+🇮🇹 *Italiano*: Introducimos a los niños y niñas en la lengua italiana desde los 3 años mediante actividades lúdicas, literarias y musicales.
 
-def nivel_inicial_horarios(to_number: str):
-    send_text_message(to_number, "🕜 Nuestros *horarios* en *Nivel inicial* son:")
-    send_text_message(to_number, """
-                        *TURNO MAÑANA*:\nSala de *2 años*/*3 años*   -   8:30 hs/12:15 hs\n\nSala de *4 años*/*5 años*   -   8:30 hs/12:30 hs\n\n*TURNO TARDE*:\nSala de *2 años*/*3 años*   -   13:20 hs/16:55 hs
-                    """)
-    send_text_message(to_number, "*Con jornada extendida optativa con comedor*")
+🤸 *Educación Física*: Desde los 2 años, los alumnos exploran y desarrollan su motricidad a través de propuestas de juego y descubrimiento.
+
+💻 *Educación Digital*: Incorporamos recursos digitales para que los niños adquieran habilidades tecnológicas que acompañen su trayectoria escolar.
+
+🎵 *Educación Musical*: Brindamos experiencias musicales que sensibilizan a los niños sobre el mundo sonoro, ampliando su repertorio cultural y fomentando el disfrute de la música.
+""")
     
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel inicial*?"
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
     send_menu_list(to_number, body_text, opciones)
 
 def nivel_inicial_talleres_optativos(to_number: str):
-    send_text_message(to_number, "🎨 Nuestros *Talleres optativos* en *Nivel inicial* son:")
-    send_text_message(to_number, """
-                        🎭 *Taller de artes visuales*:\nContribuir al conocimiento artístico a través del aporte de los diferentes recursos y técnicas, orientados a la generación de productos estéticos; dando un espacio al juego y a la creatividad desarrollando así modos de construcción personales de expresión y comunicación.\n\n🏃 *Taller de expresión y movimiento*:\nAcceder a prácticas corporales en el marco del lenguaje expresivo explorando a partir del movimiento diversos modos de conocer el mundo.\n\n⚾ *Taller de iniciación deportiva*:\nIntensificamos la práctica deportiva para que el niño/a logre un desarrollo integral a partir de diferentes experiencias corporales y motrices que continuarán en el Nivel Primario.\n\n🇬🇧 *Taller de inglés en convenio con la UTN – INSPT*:\nIniciamos a nuestros alumnos y alumnas en el conocimiento del inglés a través de propuestas lúdicas.\n\n🧩 *Taller de recreación*:\nLos niños y niñas participan de propuestas pedagógicas a través de situaciones lúdicas y recreativas.
-                    """)
+    send_text_message(to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
 
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel inicial*?"
+    send_text_message(to_number, """
+🖌️ *Taller de Artes Visuales*: Fomentamos el conocimiento artístico mediante diferentes recursos y técnicas, ofreciendo un espacio de juego y creatividad que permite desarrollar la expresión y comunicación personal.
+
+🏃 *Taller de Expresión y Movimiento*: Los niños acceden a prácticas corporales que, a través del movimiento, les permiten explorar y conocer el mundo de diversas formas.
+
+🏐 *Taller de Iniciación Deportiva*: Intensificamos la práctica deportiva para favorecer un desarrollo integral, con experiencias corporales y motrices que continuarán en el Nivel Primario.
+
+🇬🇧 *Taller de Inglés (UTN – INSPT)*: Introducimos a los alumnos en el conocimiento del inglés mediante propuestas lúdicas.
+
+🧩 *Taller de Recreación*: Los niños participan en actividades pedagógicas a través de juegos y situaciones recreativas, fomentando la diversión y el aprendizaje.
+
+""")
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
     send_menu_list(to_number, body_text, opciones)
 
-def nivel_inicial_servicios_adicionales(to_number:str):
-    send_text_message(to_number, "🧩 Otros *servicios* de *Nivel inicial*:")
+def nivel_inicial_servicios_adicionales(to_number: str):
+    send_text_message(to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
+
     send_text_message(to_number, """
-                        🍴 *Comedor*:\nLos chicos y chicas cuentan con un comedor que les proporciona alimento nutritivo. \n\n🚌 *Transporte*:\nContamos con transporte, micros que los llevan a todos los lugares que sean necesarios.
-                    """)
+*🍽️ Comedor*: Nuestro comedor ofrece comidas nutritivas y deliciosas para que disfrutes tus días en la escuela. ¡Buen provecho!
+
+*🚌 Transporte*: Contamos con transporte seguro y cómodo para que llegues y vuelvas a casa sin preocupaciones. ¡Viaja tranquilo!
+""")
     
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel inicial*?"
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
     
     opciones = opciones_nivel_inicial_menu
     
     send_menu_list(to_number, body_text, opciones)
 
-##################################################################################################################################################################################
+def nivel_inicial_horarios(to_number: str):
+    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+
+    send_text_message(to_number, """
+*Turno mañana*:
+Sala de *2 años/3 años*   -   8:30hs/12:15hs
+Sala de *4 años/5 años*   -   8:30hs/12:30hs
+
+*Turno tarde*:
+Sala de *2 años/3 años*   -   13:20hs/16:55hs
+""")
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
+    
+    opciones = opciones_nivel_inicial_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_inicial_error(to_number: str):
+    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Inicial* para continuar.")
+
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Inicial*?"
+    
+    opciones = opciones_nivel_inicial_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+# --------------------------- Mensajes sobre nivel primario 📙 --------------------------- #
 
 opciones_nivel_primario_menu = [
-        {"id": "menu_nivel_primario_opt1", "title": "Propuestas pedagogicas 💡"},
-        {"id": "menu_nivel_primario_opt2", "title": "Horarios 🕒"},
-        {"id": "menu_nivel_primario_opt3", "title": "Algunos proyectos 📌"},
-        {"id": "menu_nivel_primario_opt4", "title": "Talleres optativos 🎨"},
-        {"id": "menu_nivel_primario_opt5", "title": "Servicios adicionales 🧩"},
+        {"id": "menu_nivel_primario_opt1", "title": "Propuestas pedagógicas 💡"},
+        {"id": "menu_nivel_primario_opt2", "title": "Talleres optativos 🎨"},
+        {"id": "menu_nivel_primario_opt3", "title": "Algunos proyectos 🛠️"},
+        {"id": "menu_nivel_primario_opt4", "title": "Servicios adicionales 🧩"},
+        {"id": "menu_nivel_primario_opt5", "title": "Horarios 🕒"},
         {"id": "menu_nivel_primario_opt6", "title": "Menu anterior 🔙"}
-    ]
+]
 
 def nivel_primario_message(to_number: str):
-    send_text_message(to_number, "Excelente! 😄 Te contaré un poco sobre *Nivel Primario*")
-    send_text_message(to_number, "Nuestro propósito es que nuestros alumnos y alumnas crezcan y aprendan en un ambiente rico en experiencias que inviten a descubrir el mundo interactuando con otros en una saludable convivencia.")
-    
-    body_text = "En que lo podemos ayudar sobre *Nivel primario*?"
-    
-    opciones = opciones_nivel_primario_menu
-    
-    send_menu_list(to_number, body_text, opciones)
+    send_text_message(to_number, "¡Buenísimo! Te contaré un poco sobre nuestro *Nivel Primario* 😆📙")
 
-def nivel_primario_propuestas_pedagogicas(to_number: str):
-    send_text_message(to_number, "💡 Algunas de nuestras propuestas *pedagogicas* para *Nivel primario* son:")
+    send_text_message(to_number, "📌 En *Nivel Primario*, nuestro propósito es que nuestros alumnos y alumnas crezcan y aprendan en un ambiente *rico en experiencias* que inviten a descubrir el mundo interactuando con otros en una *saludable convivencia*.")
 
-    send_text_message(to_number, """
-                        🏐 *Educacion Fisica*:
-Trabajamos en dos jornadas obligatorias por la tarde los miércoles y viernes, asistiendo al campo de deportes del Club Ferrocarril Gral. Mitre. Jugar, poner el cuerpo en movimiento, aprender destrezas motoras y sobre todo participar de una tarde compartiendo deportes y recreación con compañeros y compañeras, son los objetivos del área de Educación Física. Ofrecemos una experiencia intensificada en horario que da identidad a nuestra escuela y que se mantiene durante los siete años del nivel.
-""")
+    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.primaria@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel_primario/*")
 
-    send_text_message(to_number, """
-                        🇮🇹 *Italiano*:
-El italiano es el idioma que caracteriza  y da impronta identitaria a nuestra institución. Desde 1ro hasta 7mo grado, se van incrementando las horas de trabajo en el aula, que además de la enseñanza del idioma buscan acercar a los niños y niñas a la cultura, las tradiciones, los valores propios de Italia. Canciones, juegos, cuentos, poesías, novelas, materiales audiovisuales, son los estímulos a través de los cuales nuestros alumnos y alumnas se apropian gradualmente del idioma.
-
-🇬🇧 *Ingles*:
-El segundo idioma que ofrecemos dentro de nuestra propuesta educativa, es el inglés. Para un abordaje más intenso del área, la propuesta de la mañana puede complementarse con los talleres extracurriculares de inglés de turno tarde, dos veces a la semana y dos horas cada día.
-""")
-    
-    send_text_message(to_number, """
-                        🖌️ *Educacion Artistica*:\nBrindar a los/as alumnos/as la oportunidad de profundizar en los distintos lenguajes artísticos mediante experiencias estéticos-expresivas que le permitan conocerlos, disfrutarlos y comprenderlos.
-
-🎵 *MÚSICA*: El aprendizaje de la música como una experiencia placentera en la cual el/la protagonista es el/la alumno/a y el continente es la música. La práctica y el hacer música es el rasgo de acción característico de todas las experiencias, sean estas para comprender las relaciones que se establecen en el discurso musical, para expresarse interpretándolo o para crear con los sonidos.
-
-🎨 *PLÁSTICA*: Nuestro propósito es acrecentar el interés de los/as alumnos/as por el universo visual, ofreciendo propuestas de enseñanza progresivamente más complejas que les permitan ampliar sus conocimientos y su inserción en una cultura que, cómo la actual, ha potenciado la incidencia de lo visual en la vida cotidiana.
-
-🎭 *TEATRO*:Los/as alumnos/as desarrollan la imaginación y la expresividad gestual, corporal y vocal dentro del juego organizado de la ficción. Se crean situaciones de enseñanza para que todos/as puedan utilizar el lenguaje teatral como medio de expresión y comunicación.
-""")
-    
-    send_text_message(to_number, """
-                        💻 *Educación tecnológica digital*:\nSe propone facilitar una vinculación comprensiva, coherente y crítica entre los alumnos/as y la técnica.
-
-*TECNOLOGÍA*: Permite que los/as alumnos/as accedan a una comprensión de la tecnología que los habilite para interrogarse crítica, pero también creativamente, acerca de mundos pasados, presentes y futuros y del lugar que le cabe a todo ciudadano/a en la creación y el control de las tecnologías.
-
-*INFORMÁTICA*: Se propone generar situaciones didácticas con empleo de variados materiales educativos informáticos en los cuales los/as alumnos/as se enfrentan a la necesidad de: 
-
-- Seleccionar información, abordar distintas estrategias lectoras e interpretar múltiples situaciones escolares en las que se emplean variadas herramientas informáticas. 
-
-- Promover situaciones que favorezcan conductas autónomas de los/as alumnos/as en el manejo de la computadora y la elaboración de sus trabajos, generando oportunidades para la adquisición de los conocimientos informáticos. 
-""")
-
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel primario*?"
-    
-    opciones = opciones = opciones_nivel_primario_menu
-    
-    send_menu_list(to_number, body_text, opciones)
-
-def nivel_primario_horarios(to_number: str):
-    send_text_message(to_number, "🕜 Nuestros *horarios* en *Nivel primario* son:")
-    
-    send_text_message(to_number, """
-                        *TURNO MAÑANA*:
-*Ingreso*: 7:30hs - 7:40hs
-de lunes a viernes (1ro a 7mo grado)
-
-*Salida*: 12:30hs
-de lunes a viernes (1ro a 2do grado)
-
-*3ro a 7mo prolongación horaria de inglés hasta las 13:30hs*
-(3er grado una vez a la semana, 4to a 7mo grado , dos veces por semana)            
-
-""")
-
-    send_text_message(to_number, """
-                        *TURNO TARDE*:
-*Lunes, martes y jueves de 14hs a 17hs:*
-Talleres optativos extraprogramáticos.
-
-*Miércoles y viernes de 14 a 17 horas:*
-Taller de educación física en campo de deportes (modalidad obligatoria).
-
-*3ro a 7mo prolongación horaria de inglés hasta las 13:30hs*
-(3er grado una vez a la semana, 4to a 7mo grado , dos veces por semana)            
-""")
-    
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel primario*?"
+    body_text = "¿En qué lo podemos ayudar sobre *Nivel Primario*?"
     
     opciones = opciones_nivel_primario_menu
     
     send_menu_list(to_number, body_text, opciones)
 
-def nivel_primario_algunos_proyectos(to_number: str):
-    send_text_message(to_number, "📌 Algunos *proyectos* de *Nivel primario*:")
-    send_text_message(to_number, """
-                        🧑‍🤝‍🧑 *Proyecto padrinos y ahijados​*:
-Proyecto que vincula a estudiantes de 7º grado con los niños y niñas de 1º grado, fomentando confianza y compañerismo. A lo largo del año comparten juegos, recreos, clases, desayunos y actividades especiales.
+def nivel_primario_propuestas_pedagogicas(to_number:str):
+    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
+    
+    send_text_message(to_number,"""
+🇮🇹🇬🇧 *Italiano e Inglés*: El italiano es nuestro idioma distintivo y se enseña de 1º a 7º grado, integrando cultura, tradiciones y valores de Italia mediante canciones, juegos, cuentos y material audiovisual.
+El inglés se ofrece como segundo idioma y puede reforzarse con talleres extracurriculares dos veces por semana en horario de la tarde.
 
-📖 *Animación a la lectura*:
-Buscamos acercar a los niños y niñas a la lectura y a las prácticas de todo lector: disfrutar historias, buscar información, reflexionar y compartir emociones, participando activamente en la comunidad de lectores y escritores.
+🏐 *Educación Física*: Se realizan dos jornadas obligatorias los miércoles y viernes en el campo de deportes del Club Ferrocarril Gral. Mitre. El objetivo es jugar, moverse, aprender destrezas motoras y compartir actividades deportivas y recreativas con los compañeros. Esta experiencia intensificada se mantiene durante los siete años del nivel y da identidad a la escuela.
 
-🌱 *Proyectos solidarios comunitarios*:
-Promovemos la solidaridad como actitud de vida, aprendida y puesta en práctica con compromiso afectivo. Colaboramos con la escuela N°442 Agua Amarilla y realizamos campañas solidarias, siempre abiertos a nuevas experiencias comunitarias.
+💻 *Educación Tecnológica y Digital*: Se fomenta la comprensión crítica y creativa de la tecnología y el uso de herramientas digitales
+- *Tecnología*: Permite interrogarse sobre el pasado, presente y futuro tecnológico y el rol del ciudadano en su desarrollo.
 
-🧠 *Proyecto ESI (Educación Sexual Integral)*:
-La ESI, según la ley 26.150, se integra en todas las áreas curriculares para desarrollar empatía, expresión de emociones y respeto. La participación familiar es clave para garantizar el derecho de los niños y niñas a informarse, preguntar y expresarse en una sociedad plural y respetuosa.
+- *Informática*: Promueve autonomía en el manejo de la computadora, selección de información, interpretación de contenidos y elaboración de trabajos escolares.
 
-🏆 *Juegos Interbandos*:
-Durante el año, los bandos blanco, rojo y verde participan en juegos y desafíos para sumar puntos. En el encuentro final, las familias se suman para alentar y se anuncia el equipo ganador, celebrando esfuerzo, compañerismo y actitud deportiva.
+🎨 *Educación Artística*: Se busca que los alumnos profundicen en distintos lenguajes artísticos para conocerlos, disfrutarlos y comprenderlos
+- *Música*: Aprender y crear música de manera activa, participativa y placentera.
 
-⛺ *Campamentos*:
-Desde hace años realizamos campamentos y actividades en la naturaleza, donde los chicos aprenden a cuidar el medio ambiente, disfrutar del cielo estrellado, compartir canciones, jugar y convivir con animales y plantas. Cada grado tiene su destino: 1º-3º Ezeiza o Villa Adelina, 4º Rosario, 5º Tandil, 6º Entre Ríos y 7º Córdoba.
+- *Plástica*: Explorar el universo visual y comprender su relevancia en la vida cotidiana.
+
+- *Teatro*: Desarrollar imaginación, expresividad corporal y vocal, y usar el lenguaje teatral como medio de comunicación.
 """)
-
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel primario*?"
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
     
     opciones = opciones_nivel_primario_menu
     
     send_menu_list(to_number, body_text, opciones)
 
 def nivel_primario_talleres_optativos(to_number: str):
-    send_text_message(to_number, "🎨 Algunos *talleres optativos* de *Nivel primario*:")
+    send_text_message(to_number, "🎨 Algunos de nuestros *talleres optativos* son:")
+
     send_text_message(to_number, """
-                        🖌️ *Taller de Arte​*:
-El taller de Arte es un espacio para el goce estético de la creación, brindando al niño un ambiente de estímulos que despierten su creatividad, su capacidad perceptiva, sensitiva y expresiva. El taller estimula la autogestión y la autonomía enriqueciendo la influencia del arte que llega a la mente y a la emoción potenciando el desarrollo de una personalidad integral.
+🖌️ *Taller de Arte*: Un espacio para disfrutar y crear, estimulando la creatividad, la percepción, la sensibilidad y la expresión. Fomenta la autonomía y la autogestión, potenciando el desarrollo integral de la personalidad de los alumnos.
 
-🥋 *Taller de Taekwondo*:
-Es uno de los talleres que se dictan por la tarde. Taekwondo conduce a los niños a desarrollar conductas no violentas, les enseña la disciplina, les fomenta el autocontrol y los ayuda a valorar la importancia del respeto mutuo.
+🥋 *Taller de Taekwondo*: Dictado por la tarde, enseña disciplina, autocontrol y respeto mutuo, promoviendo conductas no violentas y fortaleciendo valores personales.
 
-🌱 *Taller de ingles - UTN*:
-Promovemos la solidaridad como actitud de vida, aprendida y puesta en práctica con compromiso afectivo. Colaboramos con la escuela N°442 Agua Amarilla y realizamos campañas solidarias, siempre abiertos a nuevas experiencias comunitarias.
+🇬🇧 *Certificación y Taller de Inglés*: El Instituto Tomas Devoto, en convenio con la UTN, ofrece certificación oficial de inglés con validez nacional. Además, se ofrece un taller optativo y extracurricular, dinámico y divertido, donde los alumnos aprenden inglés jugando, cantando, leyendo cuentos y dramatizando. El taller promueve autodisciplina, creatividad y respeto a las diferencias, y acompaña a los alumnos desde nivel inicial hasta secundaria.
+""")
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
+    
+    opciones = opciones_nivel_primario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_primario_algunos_proyectos(to_number: str):
+        send_text_message(to_number, "🛠️ Algunos *proyectos* que hicimos:")
+
+        send_text_message(to_number, """
+🤝 *Proyecto Padrinos y Ahijados*: Los alumnos de 7° acompañan a los de 1° durante el año, compartiendo juegos, recreos, clases y actividades especiales, generando vínculos de confianza y afecto entre los más grandes y los recién ingresados.
+
+📚 *Animación a la Lectura*: Promovemos el disfrute de la lectura y la participación en la comunidad de lectores, fomentando la reflexión, la búsqueda de información y la expresión de emociones y sensaciones a través de la literatura.
+
+👐 *Proyectos Solidarios Comunitarios*: Enseñamos la solidaridad como valor cotidiano. Colaboramos con la escuela N° 442 de Catamarca y estamos abiertos a nuevas campañas y experiencias comunitarias, ayudando con compromiso y afecto.
+
+🌸 *Proyecto ESI (Educación Sexual Integral)*: La ESI se integra en todas las áreas para desarrollar empatía, expresión de emociones y respeto. La participación familiar es clave para garantizar derechos de información y expresión en un entorno pluralista.
+
+🏆 *Juegos Interbandos*: Los bandos blanco, rojo y verde compiten en juegos y desafíos durante todo el año. Familias y estudiantes celebran juntos, fomentando compañerismo, esfuerzo y espíritu deportivo.
+
+⛺ *Campamentos*: La vida en la naturaleza enseña cuidado del medio ambiente y convivencia. Desde 1° hasta 7°, los alumnos disfrutan de juegos, canciones, fogones y contacto directo con ríos, sierras, animales y plantas, generando experiencias únicas de aprendizaje.
+""")
+        
+        body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
+        
+        opciones = opciones_nivel_primario_menu
+        
+        send_menu_list(to_number, body_text, opciones)
+
+def nivel_primario_servicios_adicionales(to_number: str):
+    send_text_message(to_number, "🧩 Algunos *servicios adicionales* que tenemos:")
+
+    send_text_message(to_number, """
+*🍽️ Comedor*: Nuestro comedor ofrece comidas nutritivas y deliciosas para que disfrutes tus días en la escuela. ¡Buen provecho!
+
+*🚌 Transporte*: Contamos con transporte seguro y cómodo para que llegues y vuelvas a casa sin preocupaciones. ¡Viaja tranquilo!
+""")
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
+    
+    opciones = opciones_nivel_primario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_primario_horarios(to_number: str):
+    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+
+    send_text_message(to_number, """
+*Turno mañana*:
+
+*Ingreso*: 7:30 a 7:40hs
+de lunes a viernes. ( 1ro a 7mo grado)
+
+*Salida*: 12:30hs
+de lunes a viernes.(1ro y 2do grado).
+
+*3ro a 7mo prolongación horaria de inglés hasta las 13:30hs*
+(3er grado una vez a la semana, 4to a 7mo grado , dos veces por semana).
+
+*Turno tarde*:
+*Lunes, martes y jueves de 14 a 17 horas*
+Talleres optativos extraprogramáticos.
+
+*Miércoles y viernes de 14 a 17 horas*
+Taller de educación física en campo de deportes (modalidad obligatoria).
+""")
+    
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
+    
+    opciones = opciones_nivel_primario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_primario_error(to_number: str):
+    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Primario* para continuar.")
+
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Primario*?"
+    
+    opciones = opciones_nivel_primario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+# --------------------------- Mensajes sobre nivel secundario 📕 --------------------------- #
+
+opciones_nivel_secundario_menu = [
+        {"id": "menu_nivel_secundario_opt1", "title": "Propuestas pedagógicas 💡"},
+        {"id": "menu_nivel_secundario_opt2", "title": "Algunos proyectos 🧩"},
+        {"id": "menu_nivel_secundario_opt3", "title": "Planes de estudio 📝"},
+        {"id": "menu_nivel_secundario_opt4", "title": "Horarios 🕒"},
+        {"id": "menu_nivel_secundario_opt5", "title": "Menu anterior 🔙"}
+]
+
+def nivel_secundario_message(to_number: str):
+    send_text_message(to_number, "¡Genial! Te contaré un poco sobre nuestro *Nivel Secundario* 😆📕")
+
+    send_text_message(to_number, "📌 En *Nivel Secundario* buscamos el desarrollo integral de los alumnos, fomentando *autonomía, resiliencia y libertad responsable*, para que puedan valorar lo verdadero y bueno, y convertirse en agentes de cambio positivo en su comunidad.")
+
+    send_text_message(to_number, "✉️ Para más información o consultas, podés escribirnos a *secretaria.secundario@tomasdevoto.edu.ar* o visitar nuestra web *https://tomasdevoto.edu.ar/nivel-secundario/*")
+
+    body_text = "¿En qué lo podemos ayudar sobre *Nivel Secundario*?"
+    
+    opciones = opciones_nivel_secundario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_secundario_propuestas_pedagogicas(to_number:str):
+    send_text_message(to_number, "💡 Nuestras *propuestas pedagógicas* son las siguientes:")
+
+    send_text_message(to_number, """
+💬 *Bachiller en Comunicación*:
+Forma a los y las estudiantes en la interpretación y producción de procesos comunicacionales. Aborda las dimensiones interpersonales, institucionales y comunitarias desde una perspectiva intercultural y multimedial. Integra saberes de las ciencias sociales (filosofía, historia, sociología, economía, política, psicología, etc.) para comprender y producir prácticas comunicativas.
+*Bloques*:
+- Estudios de la comunicación
+- Producción en lenguajes multimediales
+- Saberes y prácticas en comunicación
+
+📈 *Bachiller en Economía y Administración*:
+Brinda herramientas para analizar fenómenos sociales, económicos y organizacionales. Estudia el funcionamiento del sistema económico, los agentes intervinientes, el rol del Estado y los modelos de desarrollo. Promueve la reflexión sobre el impacto social, político, ambiental y cultural de la actividad económica y organizacional.
+*Bloques*:
+- Economía y administración de organizaciones
+- Sistemas de información organizacional
+- Regulación de la actividad económica
+""")
+    
+    send_text_message(to_number,"""
+🗣️ *Lenguas Adicionales (Italiano e Inglés)*: Permiten conocer los fenómenos del lenguaje humano y acceder a distintas culturas. A través del contraste con la lengua materna, promueven la reflexión sobre la diversidad y la alteridad. Su enseñanza se organiza en torno a prácticas sociales del lenguaje.
+
+🏃‍♂️ *Educación Física y Deportes*: Favorece el desarrollo corporal, lúdico y motor, promoviendo salud, autoestima y conciencia del cuidado propio y del entorno. Incluye prácticas deportivas, expresivas y recreativas, reconociendo su valor social y formativo. Intensificación profundiza en la participación de deportes como:
+- handball
+- voleibol 
+- hockey  
+- atletismo 
+fomentando valores como solidaridad, cooperación y compromiso.
+
+🎨 *Artes*: Ofrece experiencias de creación, apreciación y reflexión artística, desarrollando la expresión, la sensibilidad y la capacidad de análisis.
+
+💻 *Campus Virtual / Plataforma Educativa*: Espacio digital que acompaña las distintas materias, favoreciendo el trabajo colaborativo y el aprendizaje en línea.
 """)
 
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel primario*?"
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
     
-    opciones = opciones_nivel_primario_menu
+    opciones = opciones_nivel_secundario_menu
     
     send_menu_list(to_number, body_text, opciones)
 
-def nivel_primario_servicios_adicionales(to_number:str):
-    send_text_message(to_number, "🧩 Otros *servicios* de *Nivel primario*:")
+def nivel_secundario_algunos_proyectos(to_number: str):
+    send_text_message(to_number, "🧩 *Algunos proyectos*:")
+
     send_text_message(to_number, """
-                        🍴 *Comedor*:\nLos chicos y chicas cuentan con un comedor que les proporciona alimento nutritivo. \n\n🚌 *Transporte*:\nContamos con transporte, micros que los llevan a todos los lugares que sean necesarios.
-                    """)
+*📚 Educación Sexual Integral (ESI)*: La ESI se enseña de manera sistemática en todos los niveles de la CABA, garantizando derechos, igualdad de acceso a la información y formación, y cumpliendo la ley Nº 2110/06. Aborda la sexualidad de forma integral: psicológica, ética, biológica, jurídica, sociocultural, histórica y de salud. Se aplica mediante:
+- Contenidos transversales en distintas materias.
+- Jornadas ESI según la Agenda Educativa de la Ciudad.
+- Situaciones emergentes del día a día.
+- Talleres y espacios curriculares específicos (ECEO) participativos.
+
+*🌳 Salidas Educativas al Medio*: Las salidas al medio ofrecen experiencias pedagógicas únicas, usando distintos escenarios y recursos. Potencian la observación, interpretación y reflexión del entorno social del estudiantado. Durante la secundaria, se realizan dentro de proyectos institucionales, interdisciplinarios y espacios curriculares específicos.
+
+*🚌 Viajes Educativos*: Los viajes educativos permiten conocer nuevos lugares, su historia y cultura, enriquecen los aprendizajes y fortalecen los vínculos del grupo, acercando a los estudiantes a distintos contenidos de manera vivencial.
+
+*🤾 Juegos Deportivos Interbandos*: Estas actividades combinan ejercicio físico y trabajo cooperativo, desarrollando habilidades físicas y sociales, y fomentando una educación en valores a través del deporte.
+
+*🇮🇹 Giochi della Gioventù*: Desde 1984, estos juegos fomentan la práctica deportiva y el crecimiento social en jóvenes de la colectividad italiana y de Sudamérica. Se realizan en Buenos Aires durante 3 días, con más de 4.500 participantes compitiendo en deportes como atletismo, básquet, fútbol, handball, hockey, natación, tenis y vóleibol. Nuestra escuela participa cada año.
+
+*📻 Radio (Comunicación)*: Los estudiantes de quinto año participan en talleres de radio, crean programas temáticos y se emiten por Radio Monk, aprendiendo a trabajar en equipo y compartir responsabilidades.
+
+*💼 Emprendedurismo (Economía)*: Alumnos de 4º y 5º año desarrollan proyectos de emprendedurismo creando y gestionando su propia empresa con compromiso ambiental, aplicando conocimientos de la escuela y reflexionando sobre la gestión responsable y el impacto social y económico.
+""")
     
-    body_text = "En que otra cosa lo podemos ayudar sobre *Nivel primario*?"
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
     
-    opciones = opciones_nivel_primario_menu
+    opciones = opciones_nivel_secundario_menu
     
     send_menu_list(to_number, body_text, opciones)
 
+def nivel_secundario_planes_estudio(to_number: str):
+    send_text_message(to_number, "📝 Estos son nuestros *planes de estudio*:")
+
+    send_img_message(to_number, "688614154256907", "Plan de estudio *ECONOMIA*")
+
+    send_img_message(to_number, "1105595595068920", "Plan de estudio *COMUNICACION*")
+
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
+    
+    opciones = opciones_nivel_secundario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_secundario_horarios(to_number: str):
+    send_text_message(to_number, "🕒 Los *horarios* son los siguientes:")
+
+    send_text_message(to_number, """
+*Turno mañana*:
+Lunes a viernes   -   7:20hs/13:20hs
+
+*Turno tarde*:
+Educación Física y Deportes   -   Voley, Handball, Atletismo y Hockey.
+Lunes y Jueves o Martes y Jueves   -   entre las 14:00 hs. y las 18:00 hs.
+""")
+
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
+    
+    opciones = opciones_nivel_secundario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
+
+def nivel_secundario_error(to_number: str):
+    send_text_message(to_number, "🤒 Ups! no entendí tu respuesta. Por favor, elige una opción del menú *Nivel Secundario* para continuar.")
+
+    body_text = "¿En qué otra cosa lo podemos ayudar sobre *Nivel Secundario*?"
+    
+    opciones = opciones_nivel_secundario_menu
+    
+    send_menu_list(to_number, body_text, opciones)
