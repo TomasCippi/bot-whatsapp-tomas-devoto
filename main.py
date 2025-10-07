@@ -70,6 +70,9 @@ original_stdout = sys.stdout
 class DailyLogger:
     def __init__(self, log_dir):
         self.log_dir = log_dir
+        # Crear carpeta si no existe
+        os.makedirs(self.log_dir, exist_ok=True)
+
         self.current_date = datetime.now().strftime("%Y-%m-%d")
         self.log_file = open(os.path.join(self.log_dir, f"{self.current_date}.log"), "a", encoding="utf-8", buffering=1)
 

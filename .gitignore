@@ -1,6 +1,20 @@
+# Entorno virtual
+/venv/
+
+# Archivo de variables de entorno
 .env
-/venv
-/assets
+
+# Cachés de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Carpeta de Git (no hace falta ignorarla, Git ya la maneja)
 /.git
-/functions/__pycache__
-README.md
+
+# Logs
+logs/
+
+# Archivos temporales del sistema
+.DS_Store
+*.swp
