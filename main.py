@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import sys
 from flask import Flask, request
 from colorama import Fore, Style
 from datetime import datetime, timedelta
@@ -29,6 +30,40 @@ if clean_log:
     import logging
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)  # solo errores graves aparecerán
+
+# --------------------- LOGS --------------------- #
+
+LOG_DIR = "logs"
+
+original_stdout = sys.stdout
+
+class DailyLogger:
+    def __init__(self, log_dir):
+        self.log_dir = log_dir
+        self.current_date = datetime.now().strftime("%Y-%m-%d")
+        self.log_file = open(os.path.join(self.log_dir, f"{self.current_date}.log"), "a", encoding="utf-8", buffering=1)
+
+    def write(self, message):
+        today = datetime.now().strftime("%Y-%m-%d")
+        if today != self.current_date:
+            # Fecha cambió → cerrar archivo viejo y abrir uno nuevo
+            self.log_file.close()
+            self.current_date = today
+            self.log_file = open(os.path.join(self.log_dir, f"{self.current_date}.log"), "a", encoding="utf-8", buffering=1)
+
+        self.log_file.write(message)
+        self.log_file.flush()
+        original_stdout.write(message)
+        original_stdout.flush()
+
+    def flush(self):
+        self.log_file.flush()
+        original_stdout.flush()
+
+# Redirigir stdout
+sys.stdout = DailyLogger(LOG_DIR)
+
+# --------------------- LOGS --------------------- #
 
 def update_conversation(numero_real):
     """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
