@@ -9,3 +9,14 @@
 [32m[2025-10-07 01:29:49] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m
 [32m[2025-10-07 01:29:50] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m
 [32m[2025-10-07 01:29:51] ✅ MENU ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m
+[33m🧹 Tabla users limpiada para pruebas[0m
+[36m🚀 Servidor corriendo en http://0.0.0.0:5000[0m
+ * Serving Flask app 'main'
+ * Debug mode: on
+[33m🧹 Tabla users limpiada para pruebas[0m
+[36m🚀 Servidor corriendo en http://0.0.0.0:5000[0m
+[33m[2025-10-07 01:37:51] 📩 Mensaje recibido de Tomas Cippitelli | hash=77f1fbff | 'hola'[0m
+[34m[2025-10-07 01:37:51] 👤 Usuario nuevo agregado: Tomas Cippitelli | hash=77f1fbff [0m
+[32m[2025-10-07 01:37:52] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m
+[32m[2025-10-07 01:37:53] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m
+[32m[2025-10-07 01:37:54] ✅ MENU ENVIADO | Usuario: Tomas Cippitelli | Hash: 77f1fbff[0m

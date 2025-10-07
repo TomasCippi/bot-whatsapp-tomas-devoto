@@ -1,3 +1,5 @@
+import hmac
+import hashlib
 import sqlite3
 import os
 import sys
@@ -12,6 +14,31 @@ from functions.templates_messages import *
 
 DB_PATH = "database.db"
 
+APP_SECRET = os.getenv("APP_SECRET")  # tu secreto de Meta
+
+# ------------------- Validar firma -------------------
+def verify_signature():
+    signature = request.headers.get("X-Hub-Signature-256")
+    if not signature:
+        print(Fore.RED + "❌ Request sin firma" + Style.RESET_ALL)
+        return False
+
+    body = request.get_data()  # cuerpo raw del POST
+    expected_signature = "sha256=" + hmac.new(
+        APP_SECRET.encode(),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+
+    # Comparación segura
+    if not hmac.compare_digest(expected_signature, signature):
+        print(Fore.RED + "❌ Firma inválida" + Style.RESET_ALL)
+        return False
+
+    return True
+# ------------------- Validar firma -------------------
+
+
 # ------------------- Limpiar tabla users para pruebas -------------------
 def limpiar_table():
     conn = sqlite3.connect(DB_PATH)
@@ -20,6 +47,9 @@ def limpiar_table():
     conn.commit()
     conn.close()
     print(Fore.YELLOW + "🧹 Tabla users limpiada para pruebas" + Style.RESET_ALL)
+
+# ------------------- Limpiar tabla users para pruebas -------------------
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -31,8 +61,8 @@ if clean_log:
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)  # solo errores graves aparecerán
 
-# --------------------- LOGS --------------------- #
 
+# --------------------- LOGS --------------------- #
 LOG_DIR = "logs"
 
 original_stdout = sys.stdout
@@ -62,7 +92,6 @@ class DailyLogger:
 
 # Redirigir stdout
 sys.stdout = DailyLogger(LOG_DIR)
-
 # --------------------- LOGS --------------------- #
 
 def update_conversation(numero_real):
@@ -173,6 +202,10 @@ def webhook_verify():
 
 @app.route("/webhook", methods=["POST"])
 def webhook_receive():
+    # -------------------- VALIDAR FIRMA -------------------- #
+    if not verify_signature():
+        return "Forbidden", 403
+
     data = request.json
     try:
         entry = data['entry'][0]
