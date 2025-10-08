@@ -62,7 +62,6 @@ def send_text_message(number_hash:str, name:str ,to_number: str, message: str):
     if response.status_code == 200:
         print(f"{Fore.GREEN}[{timestamp}] ✅ MENSAJE DE TEXTO ENVIADO | Usuario: {name} | Hash: {hash_corto}{Style.RESET_ALL}")
     else:
-        print(to_number)
         print(f"{Fore.RED}[{timestamp}] ❌ ERROR AL ENVIAR MENSAJE DE TEXTO | Usuario: {name} | Hash: {hash_corto} | Status: {response.status_code} | Detalle: {response.text}{Style.RESET_ALL}")
 
 def send_img_message(number_hash:str, name:str ,to_number: str, media_id: str, caption: str = ""):

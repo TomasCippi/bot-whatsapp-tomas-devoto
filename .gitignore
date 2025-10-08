@@ -1,20 +1,11 @@
-# Entorno virtual
 /venv/
-
-# Archivo de variables de entorno
 .env
-
-# Cachés de Python
+database.db
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Carpeta de Git (no hace falta ignorarla, Git ya la maneja)
-/.git
-
-# Logs
 logs/
-
-# Archivos temporales del sistema
 .DS_Store
 *.swp
+.gitignore
+et --soft HEAD~1

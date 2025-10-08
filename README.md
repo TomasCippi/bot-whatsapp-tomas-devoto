@@ -10,17 +10,3 @@ Requisitos para mandar imagenes
 Requisitos para mandar PDFS
 - Formatos de documentos permitidos: texto plano (.txt), PDF (.pdf), Word (.doc, .docx), Excel (.xls, .xlsx), PowerPoint (.ppt, .pptx) 
 - Tamaño máximo: 100 MB
-
-tabla users:
-- nombre
-- numero
-- fecha primera ves que escribio
-- conversacion iniciada
-- 
-
-tabla estadisticas:
-- cantidad de usuarios
-- conversaciones iniciadas
-- conversaciones inscripccion
-- mensajes enviados
-- mensajes recibidos
