@@ -98,11 +98,11 @@ sys.stdout = DailyLogger(LOG_DIR)
 # --------------------- LOGS --------------------- #
 
 def update_conversation(numero_real):
-    """Actualiza fecha y cuenta de conversación si pasaron menos de 24h."""
+    """Actualiza fecha del último mensaje si pasaron menos de 24h."""
     numero_hash = get_identifier_hash(numero_real)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT ultimo_mensaje FROM users WHERE numero = ?", (numero_hash,))
+    cursor.execute("SELECT ultimo_mensaje_enviado FROM users WHERE numero = ?", (numero_hash,))
     row = cursor.fetchone()
     fecha_actual = datetime.now()
 
@@ -110,23 +110,24 @@ def update_conversation(numero_real):
         ultimo_msg = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
         diferencia = fecha_actual - ultimo_msg
         if diferencia < timedelta(hours=24):
+            # Solo actualiza la fecha del último mensaje
             cursor.execute("""
                 UPDATE users 
-                SET conversacion_iniciada = conversacion_iniciada + 1,
-                    ultimo_mensaje = ?
+                SET ultimo_mensaje_enviado = ?
                 WHERE numero = ?
             """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
             conn.commit()
             conn.close()
             return True
         else:
-            cursor.execute("UPDATE users SET ultimo_mensaje = ? WHERE numero = ?",
+            cursor.execute("UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?",
                         (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
             conn.commit()
             conn.close()
             return False
     conn.close()
     return True
+
 
 def manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario):
     if estado_actual == 0:
@@ -255,6 +256,22 @@ def webhook_receive():
         conn.commit()
         conn.close()
 
+        # -------------------- Contador de mensajes enviados -------------------- #
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE users
+                SET mensajes_enviados_usuario = mensajes_enviados_usuario + 1,
+                    ultimo_mensaje_enviado = ?
+                WHERE numero = ?
+            """, (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(Fore.RED + "Error actualizando contador de mensajes:" + Style.RESET_ALL, e)
+        # ---------------------------------------------------------------------- #
+
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         hash_corto = numero_hash[:8]  # solo los primeros 8 caracteres del hash
 
@@ -276,8 +293,6 @@ def webhook_receive():
         # --- Manejo de estado ---
         estado_actual = get_user_state(numero_real)
         # --------------------------- Menu principal --------------------------- #
-        
-        print(numero_real)
 
         manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario)
 

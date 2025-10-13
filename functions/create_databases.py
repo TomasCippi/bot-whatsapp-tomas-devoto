@@ -15,7 +15,7 @@ def create_tables():
         nombre TEXT NOT NULL,
         numero TEXT NOT NULL UNIQUE,
         fecha_primera_vez TEXT NOT NULL,
-        conversacion_iniciada INTEGER DEFAULT 0,
+        mensajes_enviados_usuario INTEGER DEFAULT 0,
         estado REAL DEFAULT 0,
         ultimo_mensaje_enviado TEXT,
         ultimo_id_recibido TEXT
