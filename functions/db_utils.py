@@ -3,13 +3,21 @@ from datetime import datetime, timedelta
 from functions.templates_messages import bienvenida_devuelta_mensaje
 from colorama import Fore, Style
 from functions.hash_utils import get_identifier_hash
+import phonenumbers
+
 DB_PATH = "database.db"
+
+def get_connection():
+    conn = sqlite3.connect(DB_PATH, timeout=30, check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    return conn
 
 def normalizar_numero(numero: str) -> str:
     """Quita el 9 después del 54 en números celulares argentinos."""
     if numero.startswith("549"):
         return "54" + numero[3:]
     return numero
+
 
 def add_user(nombre, numero_real):
     numero_hash = get_identifier_hash(numero_real)

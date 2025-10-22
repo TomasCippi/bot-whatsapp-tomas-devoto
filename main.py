@@ -8,13 +8,21 @@ from colorama import Fore, Style
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from functions.verify_webhook import verify_webhook
-from functions.db_utils import normalizar_numero, add_user, user_exists, get_user_state, set_user_state, verificar_bienvenida_devuelta
+from functions.db_utils import normalizar_numero, add_user, user_exists, get_user_state, set_user_state, verificar_bienvenida_devuelta, get_connection, get_identifier_hash
 from functions.hash_utils import get_identifier_hash
 from functions.templates_messages import *
 
 DB_PATH = "database.db"
 
-APP_SECRET = os.getenv("APP_SECRET")  # tu secreto de Meta
+load_dotenv()
+
+# ----------------- Validar variables de entorno ----------------- #
+required_env = ["APP_SECRET", "HASH_KEY", "META_TOKEN", "META_API_VERSION", "META_PHONE_NUMBER_ID"]
+for var in required_env:
+    if not os.getenv(var):
+        raise RuntimeError(f"Variable de entorno {var} no definida")
+APP_SECRET = os.getenv("APP_SECRET")
+
 
 # ------------------- Validar firma -------------------
 def verify_signature():
@@ -41,7 +49,7 @@ def verify_signature():
 
 # ------------------- Limpiar tabla users para pruebas -------------------
 def limpiar_table():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM users")
     conn.commit()
@@ -50,8 +58,6 @@ def limpiar_table():
 
 # ------------------- Limpiar tabla users para pruebas -------------------
 
-
-load_dotenv()
 app = Flask(__name__)
 
 clean_log = True  # True = silencia los logs de Flask, False = los muestra
@@ -98,9 +104,8 @@ sys.stdout = DailyLogger(LOG_DIR)
 # --------------------- LOGS --------------------- #
 
 def update_conversation(numero_real):
-    """Actualiza fecha del último mensaje si pasaron menos de 24h."""
     numero_hash = get_identifier_hash(numero_real)
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT ultimo_mensaje_enviado FROM users WHERE numero = ?", (numero_hash,))
     row = cursor.fetchone()
@@ -109,24 +114,21 @@ def update_conversation(numero_real):
     if row and row[0]:
         ultimo_msg = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
         diferencia = fecha_actual - ultimo_msg
-        if diferencia < timedelta(hours=24):
-            # Solo actualiza la fecha del último mensaje
-            cursor.execute("""
-                UPDATE users 
-                SET ultimo_mensaje_enviado = ?
-                WHERE numero = ?
-            """, (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
-            conn.commit()
-            conn.close()
-            return True
-        else:
-            cursor.execute("UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?",
-                        (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
-            conn.commit()
-            conn.close()
-            return False
+        cursor.execute("UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?", 
+                    (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+        conn.commit()
+        conn.close()
+        # Devuelve True si está dentro de las 24h, False si no
+        return diferencia < timedelta(hours=24)
+
+    # Si nunca tuvo mensaje
+    cursor.execute("UPDATE users SET ultimo_mensaje_enviado = ? WHERE numero = ?", 
+                (fecha_actual.strftime('%Y-%m-%d %H:%M:%S'), numero_hash))
+    conn.commit()
     conn.close()
     return True
+
+
 
 
 def manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario):
@@ -235,30 +237,29 @@ def webhook_receive():
         if not texto_usuario:
             return "EVENT_RECEIVED", 200
 
-        # Después de determinar texto_usuario
         mensaje_id = mensaje['id']
-
-        # Evitar procesar mensajes duplicados (último ID recibido)
         numero_hash = get_identifier_hash(numero_real)
-        conn = sqlite3.connect(DB_PATH)
+
+        # -------------------- Evitar mensaje duplicado -------------------- #
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT ultimo_id_recibido FROM users WHERE numero = ?", (numero_hash,))
         row = cursor.fetchone()
         if row and row[0] == mensaje_id:
-            # Mensaje idéntico al último recibido → ignorar
             conn.close()
             return "EVENT_RECEIVED", 200
 
-        # Guardar como último mensaje recibido
-        cursor.execute("""
-            UPDATE users SET ultimo_id_recibido = ? WHERE numero = ?
-        """, (mensaje_id, numero_hash))
+        cursor.execute("UPDATE users SET ultimo_id_recibido = ? WHERE numero = ?", (mensaje_id, numero_hash))
         conn.commit()
         conn.close()
 
+        # -------------------- Evitar mensajes fuera de ventana 24h -------------------- #
+        if not update_conversation(numero_real):
+            return "EVENT_RECEIVED", 200
+
         # -------------------- Contador de mensajes enviados -------------------- #
         try:
-            conn = sqlite3.connect(DB_PATH)
+            conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE users
@@ -273,27 +274,23 @@ def webhook_receive():
         # ---------------------------------------------------------------------- #
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        hash_corto = numero_hash[:8]  # solo los primeros 8 caracteres del hash
+        hash_corto = numero_hash[:8]
 
         print(f"{Fore.YELLOW}[{timestamp}] 📩 Mensaje recibido de {nombre} | hash={hash_corto} | '{texto_usuario}'{Style.RESET_ALL}")
 
-        # Verificar usuario
+        # -------------------- Verificar usuario -------------------- #
         if not user_exists(numero_real):
-            print(f"{Fore.BLUE}[{timestamp}] 👤 Usuario nuevo agregado: {nombre} | hash={hash_corto} {Style.RESET_ALL}")
+            print(f"{Fore.BLUE}[{timestamp}] 👤 Usuario nuevo agregado: {nombre} | hash={hash_corto}{Style.RESET_ALL}")
             add_user(nombre, numero_real)
             bienvenida_mensaje(numero_hash, nombre, numero_real)
-            set_user_state(numero_real, 0)  # estado inicial
-            return "EVENT_RECEIVED", 200
-
-        if not update_conversation(numero_real):
+            set_user_state(numero_real, 0)
             return "EVENT_RECEIVED", 200
 
         if verificar_bienvenida_devuelta(numero_real, nombre):
             return "EVENT_RECEIVED", 200
-        # --- Manejo de estado ---
-        estado_actual = get_user_state(numero_real)
-        # --------------------------- Menu principal --------------------------- #
 
+        # -------------------- Manejo de estado -------------------- #
+        estado_actual = get_user_state(numero_real)
         manejo_menu(estado_actual, numero_hash, nombre, numero_real, texto_usuario)
 
     except Exception as e:
@@ -302,8 +299,10 @@ def webhook_receive():
     return "EVENT_RECEIVED", 200
 
 
+
+
 if __name__ == "__main__":
     limpiar_table()
     port = int(os.getenv("PORT", 5000))
     print(Fore.CYAN + f"🚀 Servidor corriendo en http://0.0.0.0:{port}" + Style.RESET_ALL)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)

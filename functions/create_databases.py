@@ -1,12 +1,15 @@
 # create_db.py
 import sqlite3
 
-# Nombre del archivo de base de datos (puede estar en la carpeta del proyecto)
 DB_NAME = "database.db"
 
 def create_tables():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
+
+    # Habilitar WAL y busy_timeout
+    cursor.execute("PRAGMA journal_mode = WAL;")
+    cursor.execute("PRAGMA busy_timeout = 30000;")  # 30s
 
     # Crear tabla users
     cursor.execute("""
