@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from functions.verificar_webhook import verificar_webhook
 from functions.consola_logs import mensaje_recibido
-from functions.mensajes_funciones import mensaje_lista, mensaje_texto
+from functions.mensajes_funciones import mensaje_lista, mensaje_texto, mensaje_imagen
 import logging
 
 app = Flask(__name__)
@@ -82,19 +82,7 @@ def recibir_mensaje():
         # --- RESPUESTA DEL BOT ---
         if tipo in ["text", "interactive"]:
             # Si es texto o respuesta del menú, responder con un mensaje + lista
-            mensaje_texto(numero, f"Recibí tu mensaje: {texto}")
-
-            mensaje_lista(
-                numero=numero,
-                titulo="Elegí una opción",
-                texto="¿Qué querés hacer ahora?",
-                footer="Bot de pruebas",
-                botones=[
-                    {"id": "op1", "title": "Ver catálogo"},
-                    {"id": "op2", "title": "Hablar con soporte"},
-                    {"id": "op3", "title": "Ver estado del pedido"}
-                ]
-            )
+            mensaje_imagen("541158633864", 1368745011625382)
 
     except Exception as e:
         print("⚠️ Error procesando mensaje:", e)
