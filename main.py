@@ -7,7 +7,7 @@ import logging
 from functions.verificar_webhook import verificar_webhook
 from functions.consola_logs import *
 from functions.mensajes_funciones import mensaje_lista, mensaje_texto, mensaje_imagen
-from functions.db_funciones import verificar_numero, insertar_usuario, limpiar_usuarios
+from functions.db_funciones import verificar_numero, insertar_usuario, limpiar_usuarios, agregar_a_blacklist, remover_de_blacklist, numero_en_blacklist
 
 
 load_dotenv()
@@ -80,12 +80,13 @@ def recibir_mensaje():
         else:
             texto = f"<{tipo}>"
 
-        # Mostrar el mensaje recibido en consola
-        mensaje_log_recibido(nombre, numero, texto, timestamp)
-
         # --- BLACKLIST ---
-        #if numero_en_blacklist(numero):
-        #    return "EVENT_RECEIVED", 200
+        if numero_en_blacklist(numero):
+            # Si está en la blacklist: no mostrar logs, no procesar, no responder
+            return "EVENT_RECEIVED", 200
+
+        # --- Mostrar el mensaje recibido ---
+        mensaje_log_recibido(nombre, numero, texto, timestamp)
 
 
         # --- CHECK DE USUARIO ---
@@ -111,12 +112,11 @@ def recibir_mensaje():
 # --- Ejecución principal ---
 if __name__ == "__main__":
     # --- Limpieza automática para pruebas ---
-    limpiar_tabla = False
-    
+    limpiar_tabla = True
+    remover_de_blacklist("541158633864")
+
     if limpiar_tabla:
-        print("🧹 Limpiando tabla USERS para pruebas...")
         limpiar_usuarios()
-        print("✔️ Tabla limpiada.\n")
     else:
         pass
 
