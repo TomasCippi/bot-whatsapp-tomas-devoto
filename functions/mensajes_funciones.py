@@ -2,7 +2,7 @@ import os
 import requests
 from colorama import Fore, Style
 from dotenv import load_dotenv
-from functions.consola_logs import mensaje_enviado, mensaje_recibido
+from functions.consola_logs import *
 
 # --- Configuración general ---
 load_dotenv()
@@ -12,7 +12,8 @@ PHONE_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
 TOKEN = os.getenv("META_TOKEN")
 
 if not all([VERSION, PHONE_ID, TOKEN]):
-    print(f"{Fore.RED}⚠️ Faltan variables en el archivo .env{Style.RESET_ALL}")
+    mensaje_log_error("Faltan variables en el archivo .env. Revisá WHATSAPP_API_VERSION, WHATSAPP_PHONE_NUMBER_ID y META_TOKEN.")
+    raise SystemExit("Faltan variables de entorno: revisá .env")
 
 URL = f"https://graph.facebook.com/{VERSION}/{PHONE_ID}/messages"
 HEADERS = {
@@ -33,13 +34,14 @@ def mensaje_texto(numero: str, mensaje: str):
     try:
         response = requests.post(URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
-            mensaje_enviado(numero, mensaje)
+            mensaje_log_enviado(numero, mensaje)
         else:
-            print(f"{Fore.RED}✗ Error al enviar mensaje ({response.status_code}): {response.text}{Style.RESET_ALL}")
+            mensaje_log_error(f"Error al enviar mensaje a [{numero}]({response.status_code}) | Detalle: {response.text}")
         return response.json()
     except Exception as e:
-        print(f"{Fore.RED}✗ Error al conectar con la API: {e}{Style.RESET_ALL}")
+        mensaje_log_error(f"Error al conectar con la API: {e}")
         return None
+
 
 def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: list):
     payload = {
@@ -53,9 +55,7 @@ def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: li
             "action": {
                 "button": titulo,
                 "sections": [
-                    {
-                        "rows": botones
-                    }
+                    {"rows": botones}
                 ]
             }
         }
@@ -64,36 +64,33 @@ def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: li
     try:
         response = requests.post(URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
-            mensaje_enviado(numero, "[Lista interactiva]")
+            mensaje__log_enviado(numero, "[Lista interactiva]")
         else:
-            print(f"{Fore.RED}✗ Error al enviar lista ({response.status_code}): {response.text}{Style.RESET_ALL}")
+            mensaje_log_error(f"Error al enviar lista a [{numero}]({response.status_code}) | Detalle: {response.text}")
         return response.json()
     except Exception as e:
-        print(f"{Fore.RED}✗ Error al conectar con la API: {e}{Style.RESET_ALL}")
+        mensaje_log_error(f"Error al conectar con la API: {e}")
         return None
 
+
 def mensaje_imagen(numero: str, id_imagen: str, texto: str = None):
-    """Envía una imagen por WhatsApp (con o sin texto)."""
     payload = {
         "messaging_product": "whatsapp",
         "to": numero,
         "type": "image",
-        "image": {
-            "id": id_imagen
-        }
+        "image": {"id": id_imagen}
     }
 
-    # Si hay texto, lo agregamos al cuerpo
     if texto:
         payload["image"]["caption"] = texto
 
     try:
         response = requests.post(URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
-            mensaje_enviado(numero, "[Imagen] " + texto if texto else "[Imagen sin texto]")
+            mensaje_log_enviado(numero, "[Imagen] " + texto if texto else "[Imagen sin texto]")
         else:
-            print(f"{Fore.RED}✗ Error al enviar imagen ({response.status_code}): {response.text}{Style.RESET_ALL}")
+            mensaje_log_error(f"Error al enviar imagen a [{numero}]({response.status_code}) | Detalle: {response.text}")
         return response.json()
     except Exception as e:
-        print(f"{Fore.RED}✗ Error al conectar con la API: {e}{Style.RESET_ALL}")
+        mensaje_log_error(f"Error al conectar con la API: {e}")
         return None

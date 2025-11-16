@@ -1,15 +1,23 @@
 from flask import Flask, request, jsonify
-from functions.verificar_webhook import verificar_webhook
-from functions.consola_logs import mensaje_recibido
-from functions.mensajes_funciones import mensaje_lista, mensaje_texto, mensaje_imagen
+from colorama import Fore, Style
+from dotenv import load_dotenv
+import os
 import logging
+
+from functions.verificar_webhook import verificar_webhook
+from functions.consola_logs import *
+from functions.mensajes_funciones import mensaje_lista, mensaje_texto, mensaje_imagen
+from functions.db_funciones import verificar_numero, insertar_usuario, limpiar_usuarios
+
+
+load_dotenv()
 
 app = Flask(__name__)
 
 # --- Control de logs ---
-def imprimir_logs(opcion: bool):
-    """Activa o desactiva los logs de Flask."""
-    if opcion:
+def imprimir_logs():
+    opcion = os.getenv("IMPRIMIR_LOGS_FLASK")
+    if opcion == "True":
         print("🟢 Logs de Flask activos")
     else:
         log = logging.getLogger('werkzeug')
@@ -17,12 +25,10 @@ def imprimir_logs(opcion: bool):
         app.logger.disabled = True
         print("🛑 Logs de Flask desactivados")
 
-
 # --- Webhook de verificación (GET) ---
 @app.route("/webhook", methods=["GET"])
 def verificar():
     return verificar_webhook()
-
 
 # --- Webhook de mensajes (POST) ---
 @app.route("/webhook", methods=["POST"])
@@ -43,7 +49,7 @@ def recibir_mensaje():
         # Datos del contacto
         contacto = cambio["contacts"][0]
         nombre = contacto["profile"].get("name", "Desconocido")
-        numero = "541158633864" #contacto.get("wa_id", "Sin número")
+        numero = "541158633864"  # contacto.get("wa_id", "Sin número")
         timestamp = mensaje.get("timestamp", "0")
 
         # --- Procesamiento del mensaje según su tipo ---
@@ -51,7 +57,6 @@ def recibir_mensaje():
             texto = mensaje["text"]["body"]
 
         elif tipo == "interactive":
-            # Puede ser una respuesta de lista o de botón
             interactivo = mensaje.get("interactive", {})
             if "list_reply" in interactivo:
                 texto = interactivo["list_reply"]["title"] + " [MENU INTERACTIVO]"
@@ -73,15 +78,28 @@ def recibir_mensaje():
             texto = "[IMAGEN]"
 
         else:
-            # Cualquier otro tipo (imagen, audio, etc.)
             texto = f"<{tipo}>"
 
         # Mostrar el mensaje recibido en consola
-        mensaje_recibido(nombre, numero, texto, timestamp)
+        mensaje_log_recibido(nombre, numero, texto, timestamp)
+
+        # --- BLACKLIST ---
+        #if numero_en_blacklist(numero):
+        #    return "EVENT_RECEIVED", 200
+
+
+        # --- CHECK DE USUARIO ---
+        if not verificar_numero(numero):
+            mensaje_log_alerta(f"El número [{numero}] no existe en la base de datos")
+            if insertar_usuario(numero, nombre):
+                mensaje_log_usuario_agregado(numero, nombre)
+            else:
+                mensaje_log_error(f"No se pudo agregar el usuario [{numero}]")
+                return "EVENT_RECEIVED", 200  # Cortamos, no seguimos si falla
+
 
         # --- RESPUESTA DEL BOT ---
         if tipo in ["text", "interactive"]:
-            # Si es texto o respuesta del menú, responder con un mensaje + lista
             mensaje_imagen("541158633864", 1368745011625382)
 
     except Exception as e:
@@ -92,5 +110,15 @@ def recibir_mensaje():
 
 # --- Ejecución principal ---
 if __name__ == "__main__":
-    imprimir_logs(False)
+    # --- Limpieza automática para pruebas ---
+    limpiar_tabla = False
+    
+    if limpiar_tabla:
+        print("🧹 Limpiando tabla USERS para pruebas...")
+        limpiar_usuarios()
+        print("✔️ Tabla limpiada.\n")
+    else:
+        pass
+
+    imprimir_logs()
     app.run(debug=True, port=5000)
