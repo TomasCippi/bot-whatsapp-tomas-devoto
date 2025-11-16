@@ -192,3 +192,34 @@ def limpiar_usuarios():
 
     finally:
         conn.close()
+
+
+def obtener_estado_usuario(conn, numero: str) -> int:
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                "SELECT estado FROM users WHERE numero = %s",
+                (numero,)
+            )
+            result = cur.fetchone()
+            if result:
+                return result["estado"]
+            else:
+                return None  # Usuario no encontrado
+    except Exception as e:
+        mensaje_log_error(f"Error al obtener estado del usuario {numero}: {e}")
+        return None
+
+def cambiar_estado_usuario(conn, numero: str, nuevo_estado: int) -> bool:
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET estado = %s WHERE numero = %s",
+                (nuevo_estado, numero)
+            )
+            conn.commit()
+        return True
+    except Exception as e:
+        mensaje_log_error(f"Error al cambiar estado del usuario {numero}: {e}")
+        conn.rollback()
+        return False

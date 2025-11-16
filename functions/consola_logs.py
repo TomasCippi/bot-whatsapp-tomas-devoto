@@ -8,13 +8,17 @@ def _ahora():
 # --- Mensaje recibido ---
 def mensaje_log_recibido(nombre, numero, texto, timestamp):
     try:
-        fecha_hora = datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')
+        # Reemplazar saltos de línea por espacio
+        texto_unilinea = " ".join(texto.splitlines())
+        # Cortar y agregar puntos suspensivos si es necesario
+        texto_corto = (texto_unilinea[:80] + " ......") if len(texto_unilinea) > 80 else texto_unilinea
+
         print(
-            f"[{fecha_hora}]"
+            f"[{_ahora()}]"
             f"{Fore.GREEN}   Mensaje recibido{Style.RESET_ALL} | "
             f"Nombre: {Fore.YELLOW}{nombre}{Style.RESET_ALL} | "
             f"Número: {Fore.BLUE}{numero}{Style.RESET_ALL} | "
-            f"Contenido: '{Fore.GREEN}{texto}{Style.RESET_ALL}' |"
+            f"Contenido: '{Fore.GREEN}{texto_corto}{Style.RESET_ALL}'"
         )
     except Exception as e:
         print(f"[{_ahora()}]{Fore.RED}   Error en mensaje_recibido(): {e}{Style.RESET_ALL}")
@@ -23,14 +27,20 @@ def mensaje_log_recibido(nombre, numero, texto, timestamp):
 # --- Mensaje enviado ---
 def mensaje_log_enviado(numero, texto):
     try:
+        # Reemplazar saltos de línea por espacio
+        texto_unilinea = " ".join(texto.splitlines())
+        # Cortar y agregar puntos suspensivos si es necesario
+        texto_corto = (texto_unilinea[:80] + " ......") if len(texto_unilinea) > 80 else texto_unilinea
+
         print(
             f"[{_ahora()}]"
             f"{Fore.CYAN}   Mensaje enviado{Style.RESET_ALL} | "
             f"Para: {Fore.BLUE}{numero}{Style.RESET_ALL} | "
-            f"Contenido: {Fore.GREEN}'{texto}'{Style.RESET_ALL} |"
+            f"Contenido: {Fore.GREEN}'{texto_corto}'{Style.RESET_ALL}"
         )
     except Exception as e:
         print(f"[{_ahora()}]{Fore.RED}   Error en mensaje_enviado(): {e}{Style.RESET_ALL}")
+
 
 
 # --- Usuario agregado ---

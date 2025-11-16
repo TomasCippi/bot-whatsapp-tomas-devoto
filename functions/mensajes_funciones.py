@@ -43,7 +43,7 @@ def mensaje_texto(numero: str, mensaje: str):
         return None
 
 
-def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: list):
+def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: list, menu_id: str):
     payload = {
         "messaging_product": "whatsapp",
         "to": numero,
@@ -64,7 +64,7 @@ def mensaje_lista(numero: str, titulo: str, texto: str, footer: str, botones: li
     try:
         response = requests.post(URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
-            mensaje__log_enviado(numero, "[Lista interactiva]")
+            mensaje_log_enviado(numero, f"[Lista interactiva '{menu_id}'] ")
         else:
             mensaje_log_error(f"Error al enviar lista a [{numero}]({response.status_code}) | Detalle: {response.text}")
         return response.json()
