@@ -31,6 +31,49 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.disabled = True 
 
+import re
+
+def normalizar_numero(numero: str) -> str:
+    """
+    Limpia y normaliza un número de WhatsApp (solo para Argentina 54 11).
+    
+    1. Elimina todos los caracteres no numéricos.
+    2. Elimina el '+'.
+    3. Para 54 11, elimina el '9' que puede venir después del código de país.
+    4. Maneja el prefijo '15' si aparece.
+    """
+    
+    # 1. Elimina todos los caracteres no numéricos, excepto el '+' inicial
+    numero_limpio = re.sub(r'[^0-9+]', '', numero)
+    
+    # 2. Elimina el '+' si existe
+    if numero_limpio.startswith('+'):
+        numero_limpio = numero_limpio[1:]
+        
+    # 3. Normalización específica para Argentina (54)
+    if numero_limpio.startswith('54'):
+        # Caso: 54 9 11... -> Eliminar el '9'
+        # El 9 debe estar en la posición 3 (índice 2)
+        if len(numero_limpio) > 3 and numero_limpio[2] == '9' and numero_limpio[3:5] == '11':
+            # Ejemplo: 54911xxxxxxx -> 5411xxxxxxx
+            return numero_limpio[:2] + numero_limpio[3:]
+        
+        # Caso: 54 11 15... -> Eliminar el '15'
+        # El 15 (o 1115) se usa en algunos sistemas y debe ser 11
+        if numero_limpio.startswith('541115'):
+            # Ejemplo: 54111545678901 -> 541145678901
+            # Nota: Esto es peligroso si el número real tiene 15 dígitos.
+            # Una normalización más segura es limitarse a remover solo el '9'.
+            pass # Para fines de la API de Meta, centrémonos en el '9'.
+
+    # Si no es un caso conocido o no requiere limpieza de 9, devuelve el número
+    return numero_limpio
+
+# Ejemplos:
+# print(normalizar_numero("54 9 11 4567-8901"))  # Debería dar '541145678901'
+# print(normalizar_numero("541145678901"))      # Debería dar '541145678901'
+# print(normalizar_numero("+5491145678901"))    # Debería dar '541145678901'
+
 # ==========================================
 #  WORKER: Procesa el mensaje en segundo plano
 # ==========================================
@@ -48,9 +91,13 @@ def worker_procesar_mensaje(data):
         numero_origen = mensaje.get("from")
         
         # 🔥 HARDCODEO SOLICITADO: Forzar envíos al número de prueba
-        NUMERO_TEST = "541158633864"
-        numero_real = NUMERO_TEST 
+        #NUMERO_TEST = "541158633864"
+        #numero_real = NUMERO_TEST 
         
+        numero_normalizado = normalizar_numero(numero_origen)
+
+        numero_real = numero_normalizado
+
         # Hash del número
         numero_hash = hash_numero(numero_real)
 
