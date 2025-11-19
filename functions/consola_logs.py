@@ -6,7 +6,7 @@ def _ahora():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 # --- Mensaje recibido ---
-def mensaje_log_recibido(nombre, numero, texto, timestamp):
+def mensaje_log_recibido(nombre, numero, texto, estado):
     try:
         # Reemplazar saltos de línea por espacio
         texto_unilinea = " ".join(texto.splitlines())
@@ -17,6 +17,7 @@ def mensaje_log_recibido(nombre, numero, texto, timestamp):
             f"[{_ahora()}]"
             f"{Fore.GREEN}   Mensaje recibido{Style.RESET_ALL} | "
             f"Nombre: {Fore.YELLOW}{nombre}{Style.RESET_ALL} | "
+            f"Estado: {Fore.MAGENTA}[{estado}]{Style.RESET_ALL} | "
             f"Número: {Fore.BLUE}{numero}{Style.RESET_ALL} | "
             f"Contenido: '{Fore.GREEN}{texto_corto}{Style.RESET_ALL}'"
         )

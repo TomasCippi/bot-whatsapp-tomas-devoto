@@ -45,7 +45,7 @@ def template_menu_principal(numero: str, texto: str):
 
 # --------------------------- Mensajes de error --------------------------- #
 def template_menu_principal_error(numero: str, menu_texto: str):
-    mensaje_texto(numero, f"🤒 Ups! no entendí tu respuesta. Por favor, solo elige una opción del menú *{menu_texto}* para continuar")
+    mensaje_texto(numero, f"🤒 Ups! no entendí tu respuesta. El bot solo interpreta las respuestas de los menus, elige una opcion del menu *{menu_texto}* para continuar")
 
 # --------------------------- Mensajes sobre nosotros 🏫 --------------------------- #
 def template_sobre_nosotros(numero: str):
@@ -180,6 +180,8 @@ Sala de *4 años/5 años*   -   8:30hs/12:30hs
 *Turno tarde*:
 Sala de *2 años/3 años*   -   13:20hs/16:55hs
 """)
+
+    template_menu_nivel_inicial(numero, "Qué otra cosa te gustaría saber sobre el *Nivel Inicial*?")
 
 # --------------------------- Mensajes sobre nivel primario 📙 --------------------------- #
 def template_menu_nivel_primario(numero: str, texto: str):
