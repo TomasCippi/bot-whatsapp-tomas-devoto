@@ -90,10 +90,10 @@ def control_ultimo_mensaje(numero_hash) -> bool:
     Retorna False si todo sigue igual.
     """
     # CONFIGURACION TIEMPO
-    RESET_DIAS = 0
-    RESET_HORAS = 10
-    RESET_MINUTOS = 0
-    RESET_SEGUNDOS = 0 
+    RESET_DIAS = int(os.getenv("RESET_DIAS"))
+    RESET_HORAS = int(os.getenv("RESET_HORAS"))
+    RESET_MINUTOS = int(os.getenv("RESET_MINUTOS"))
+    RESET_SEGUNDOS = int(os.getenv("RESET_SEGUNDOS"))
 
     try:
         with get_db_connection() as conn:
